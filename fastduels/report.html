@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>duels · project data</title>
+<style>
+  /* ============ CANONICAL THEME BLOCK (source of truth) ============ */
+  :root {
+    --bg:#F5F0E8; --bg-soft:#EFE8D7; --surface:#FFFFFF; --fg:#0A0A0A;
+    --border:#000000; --line:rgba(0,0,0,.16); --dim:#5C5648;
+    --accent:#1A7A1A; --warn:#D97706;
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+    --maxw:1100px;
+    --c1:#1A7A1A; --c2:#0E6BA8; --c3:#B8336A; --c4:#D97706; --c5:#5E548E; --c6:#5C5648;
+  }
+  html[data-theme="dark"]{
+    --bg:#0B0B0B; --bg-soft:#141414; --surface:#161616; --fg:#EDEDE6;
+    --border:#EDEDE6; --line:rgba(255,255,255,.18); --dim:#8A8474;
+    --accent:#3FB950; --warn:#E8902E;
+    --c1:#3FB950; --c2:#4493D6; --c3:#D86A98; --c4:#E8902E; --c5:#9A8FD0; --c6:#8A8474;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);
+    font-feature-settings:"liga" 0,"calt" 0;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+  .card{border:2px solid var(--border);background:var(--surface);padding:18px;border-radius:0;}
+  .push{transition:transform 90ms linear,box-shadow 90ms linear;}
+  .push:hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 0 var(--border);}
+  .tag{display:inline-block;border:2px solid var(--border);background:var(--bg);padding:3px 9px;
+    font-size:12px;font-family:var(--mono);}
+  .tag.empty{border-style:dashed;color:var(--dim);}
+  .term{border:2px solid var(--border);background:var(--bg-soft);}
+  .term-bar{background:var(--fg);color:var(--bg);padding:7px 12px;font-size:11px;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;}
+  .term-body{padding:14px;}
+  .site-nav{display:flex;align-items:center;border-bottom:2px solid var(--border);position:sticky;
+    top:0;z-index:50;background:var(--bg);}
+  .site-nav .brand{padding:14px 16px;font-weight:700;}
+  .site-nav a{padding:14px 16px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;
+    border-left:2px solid var(--border);}
+  .site-nav a:hover,.site-nav a[aria-current="page"]{background:var(--fg);color:var(--bg);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  @media (prefers-reduced-motion:reduce){.push:hover{transform:none;box-shadow:none;}}
+
+  /* ============ REPORT LAYOUT ============ */
+  .num { font-variant-numeric: tabular-nums; }
+  .mono{background:var(--bg-soft);border:1px solid var(--line);padding:0 4px;color:var(--dim);}
+  .report-wrap {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 56px) clamp(20px, 4vw, 40px) 80px;
+  }
+
+  /* ============ HEADER ============ */
+  header.top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 40px;
+  }
+  .title {
+    font-size: clamp(34px, 5.6vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.0;
+    margin: 0 0 14px;
+  }
+  .title .prompt { color: var(--accent); margin-right: 8px; }
+  .subtitle {
+    color: var(--dim);
+    font-size: 13px;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 0;
+    align-items: center;
+  }
+  .subtitle .dot { color: var(--dim); margin: 0 9px; }
+
+  /* segmented theme toggle — brutalist */
+  .seg {
+    display: inline-flex;
+    border: 2px solid var(--border);
+    flex: none;
+  }
+  .seg button {
+    appearance: none;
+    border: 0;
+    border-left: 2px solid var(--border);
+    background: var(--bg);
+    color: var(--dim);
+    font: inherit;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  .seg button:first-child { border-left: 0; }
+  .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .seg button:hover { background: var(--fg); color: var(--bg); }
+
+  /* ============ SECTION SCAFFOLD ============ */
+  section { margin-top: 48px; }
+  .eyebrow {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--fg);
+    margin: 0 0 18px;
+  }
+  .eyebrow::before { content: "$"; color: var(--accent); }
+  .eyebrow .count {
+    color: var(--accent);
+    letter-spacing: .04em;
+  }
+  .eyebrow .rule {
+    flex: 1 1 auto;
+    height: 0;
+    border-top: 1px dashed var(--line);
+    transform: translateY(-3px);
+  }
+
+  /* ============ KPI ============ */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .kpi { padding: 22px 22px 20px; }
+  .kpi .v {
+    font-size: clamp(32px, 4.4vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .kpi.zero .v { color: var(--dim); }
+  .kpi .l {
+    margin-top: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  /* ============ SUMMARY ============ */
+  .summary { padding: 0; }
+  .summary .term-body { padding: 26px 28px; }
+  .summary p {
+    margin: 0;
+    font-size: clamp(15px, 2vw, 17px);
+    line-height: 1.65;
+    color: var(--fg);
+    text-wrap: pretty;
+    max-width: 72ch;
+  }
+  .summary b { font-weight: 700; color: var(--accent); }
+
+  /* ============ TWO-COLUMN ============ */
+  .cols {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 44px;
+  }
+  .cols.even { grid-template-columns: 1fr 1fr; }
+
+  /* features */
+  .features { display: flex; flex-direction: column; }
+  .feature {
+    padding: 18px 0;
+    border-top: 1px dashed var(--line);
+  }
+  .feature:first-child { border-top: 0; padding-top: 0; }
+  .feature .name { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+  .feature .name::before { content: "› "; color: var(--accent); font-weight: 800; }
+  .feature .desc { color: var(--dim); font-size: 13.5px; margin-top: 4px; line-height: 1.5; }
+  .feature .ev {
+    margin-top: 9px;
+    font-size: 12px;
+    color: var(--dim);
+    line-height: 1.65;
+    word-break: break-word;
+  }
+
+  /* stack */
+  .stack-main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 18px;
+    margin-bottom: 18px;
+    border-bottom: 2px solid var(--border);
+  }
+  .stack-main .tag { font-size: 13px; padding: 6px 11px; }
+  .stack-main .tag small { color: var(--dim); font-size: 11px; margin-left: 5px; }
+  .stack-group + .stack-group { margin-top: 24px; }
+  .stack-group .gl {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 12px;
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* ============ ACTIVITY CHART ============ */
+  .panel { padding: 24px; }
+  .panel.tight { padding: 0; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .bar { fill: var(--accent); }
+  .bar.faint { fill: var(--dim); opacity: .5; }
+  .axis-line { stroke: var(--border); stroke-width: 2; }
+  .vlabel { fill: var(--dim); font-size: 11px; font-variant-numeric: tabular-nums; font-family: var(--mono); }
+  .vlabel.peak { fill: var(--accent); font-weight: 700; }
+  .dlabel { fill: var(--dim); font-size: 12px; font-family: var(--mono); }
+  .chart .empty-note { fill: var(--dim); font-size: 13px; font-family: var(--mono); }
+
+  /* ============ LANGUAGE DONUT ============ */
+  .donut-wrap { display: flex; align-items: center; gap: 44px; flex-wrap: wrap; }
+  .donut { flex: none; position: relative; width: 224px; height: 224px; }
+  .donut svg { width: 224px; height: 224px; transform: rotate(-90deg); }
+  .donut .track { fill: none; stroke: var(--line); }
+  .donut .seg { fill: none; stroke-linecap: butt; }
+  .donut-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .donut-center .big { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+  .donut-center .sm { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-top: 4px; }
+  .legend { flex: 1 1 280px; display: flex; flex-direction: column; gap: 2px; min-width: 240px; }
+  .leg {
+    display: grid;
+    grid-template-columns: 14px 1fr auto auto;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 0;
+    border-top: 1px dashed var(--line);
+    font-size: 14px;
+  }
+  .leg:first-child { border-top: 0; }
+  .leg .swatch { width: 12px; height: 12px; border: 1px solid var(--border); }
+  .leg .lname { color: var(--fg); }
+  .leg .lcount { color: var(--dim); font-variant-numeric: tabular-nums; font-size: 12.5px; }
+  .leg .lpct { color: var(--fg); font-variant-numeric: tabular-nums; font-weight: 700; min-width: 44px; text-align: right; }
+
+  /* docs secondary stat */
+  .docs-stat {
+    margin-top: 18px;
+    font-size: 12px;
+  }
+  .docs-stat .term-body { padding: 10px 14px; color: var(--dim); }
+  .docs-stat .term-body b { color: var(--fg); font-weight: 700; }
+  .docs-stat .prompt { color: var(--accent); font-weight: 700; margin-right: 6px; }
+
+  /* ============ TOP FILES ============ */
+  .files { display: flex; flex-direction: column; gap: 18px; }
+  .file .row1 {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+    font-size: 14px;
+  }
+  .file .path { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file .lines { color: var(--fg); font-variant-numeric: tabular-nums; flex: none; font-weight: 700; }
+  .file .lines span { color: var(--dim); font-weight: 400; }
+  .file .track {
+    margin-top: 8px;
+    height: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .file .fill { height: 100%; background: var(--accent); }
+
+  /* ============ SESSIONS ============ */
+  .sessions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .sess { padding: 22px 22px 20px; }
+  .sess .date { color: var(--accent); font-size: 13px; font-weight: 700; }
+  .sess .at { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; margin: 12px 0 14px; }
+  .sess .meta { color: var(--dim); font-size: 13px; line-height: 1.5; }
+  .sess .meta b { color: var(--fg); font-weight: 700; }
+
+  /* ============ COMMIT LOG ============ */
+  .log { max-height: 280px; overflow: auto; }
+  .log .term-body { padding: 6px 0; }
+  .log .line {
+    display: flex; gap: 16px;
+    padding: 7px 16px;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .log .line .d { color: var(--dim); flex: none; }
+  .log .line .s { color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log .line .s::before { content: "› "; color: var(--accent); }
+  .log .empty {
+    padding: 20px 16px;
+    font-size: 13px;
+    color: var(--dim);
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    margin-top: 64px;
+    padding-top: 22px;
+    border-top: 2px solid var(--border);
+    text-align: center;
+    color: var(--dim);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 860px) {
+    .cols, .cols.even { grid-template-columns: 1fr; gap: 36px; }
+    .sessions { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 680px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    header.top { flex-direction: column; }
+  }
+  @media (max-width: 420px) {
+    .kpis { grid-template-columns: 1fr; }
+    .sessions { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<style class="site-nav-css">
+  .site-nav{display:flex;align-items:center;border-bottom:2px solid var(--border);position:sticky;top:0;z-index:50;background:var(--bg);flex-wrap:wrap;}
+  .site-nav .brand{padding:14px 16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:38vw;}
+  .site-nav a{padding:14px 16px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;border-left:2px solid var(--border);}
+  .site-nav a:hover,.site-nav a[aria-current="page"]{background:var(--fg);color:var(--bg);}
+  @media (max-width:680px){.site-nav .brand{max-width:28vw;}}
+</style>
+<nav class="site-nav" aria-label="Project site">
+  <span class="brand">duels</span>
+  <a href="index.html" data-page="overview">Overview</a>
+  <a href="report.html" data-page="data" aria-current="page">Data</a>
+  <a href="course.html" data-page="course">Course</a></nav>
+<div class="report-wrap">
+
+  <!-- 1. HEADER -->
+  <header class="top">
+    <div>
+      <h1 class="title"><span class="prompt">$</span>duels</h1>
+      <p class="subtitle num">
+        <span>Generated 2026-05-30 12:35 GMT+2</span>
+        <span class="dot">·</span><span>6 sessions</span>
+        <span class="dot">·</span><span>147 commits</span>
+      </p>
+    </div>
+    <div class="seg" role="group" aria-label="Color theme">
+      <button id="t-light" aria-pressed="true">Light</button>
+      <button id="t-dark" aria-pressed="false">Dark</button>
+    </div>
+  </header>
+
+  <!-- 2. KPI ROW -->
+  <div class="kpis">
+    <div class="card push kpi"><div class="v num">10h 19min</div><div class="l">Active tool time</div></div>
+    <div class="card push kpi"><div class="v num">24,024</div><div class="l">Lines of code</div></div>
+    <div class="card push kpi"><div class="v num">147</div><div class="l">Commits</div></div>
+    <div class="card push kpi"><div class="v num">8</div><div class="l">Features detected</div></div>
+  </div>
+
+  <!-- 3. SUMMARY -->
+  <section>
+    <div class="summary term">
+      <div class="term-bar"><span>SUMMARY</span><span>readme.md</span></div>
+      <div class="term-body">
+        <p>FASTDUELS is a web-based 1v1 mini-game platform where two players race through short head-to-head "Higher or Lower?" matches in about 90 seconds, no install or account required. It runs a SvelteKit PWA frontend against <b>PartyKit</b> Durable Objects on Cloudflare for realtime lobby matchmaking and server-authoritative match rooms, persists users and results in Cloudflare <b>D1</b> via <b>Drizzle</b>, and signs every WebSocket message with a JWT so reveals stay server-side and cheat-proof. The codebase cleanly splits a reusable platform (auth, lobby, scoring, UI shell in <span class="mono">apps/web/</span> and <span class="mono">packages/partykit-server/</span>) from swappable game and content modules (<span class="mono">packages/game-engine/</span>, <span class="mono">packages/categories/</span>).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. FEATURES + STACK -->
+  <section>
+    <div class="cols">
+      <div>
+        <p class="eyebrow">Features <span class="count">8</span><span class="rule"></span></p>
+        <div class="features">
+          <div class="feature"><div class="name">Sub-3-second guest matches</div><div class="desc">Drops players from landing into a live 1v1 round with just a nickname in localStorage, so there is nothing to install or sign up for before the first match.</div><div class="ev">apps/web/src/routes/[[locale=locale]]/play/+page.svelte, packages/partykit-server/src/lobby/lobby-room.ts, packages/partykit-server/src/lobby/queue.ts</div></div>
+          <div class="feature"><div class="name">Cheat-proof realtime duels</div><div class="desc">Keeps every answer reveal server-side in the Match Durable Object and signs each WebSocket message with a JWT, so a tampered client cannot peek at the next answer or fake a score.</div><div class="ev">packages/partykit-server/src/match/match-room.ts, packages/partykit-server/src/match/round-flow.ts, packages/partykit-server/src/auth/jwt.ts</div></div>
+          <div class="feature"><div class="name">Never wait for an opponent</div><div class="desc">Falls back to a bot opponent when the matchmaking queue is empty, so a player always gets a full match instead of staring at a lobby spinner.</div><div class="ev">packages/game-engine/src/bot.ts, packages/game-engine/src/match-runner.ts, packages/partykit-server/src/lobby/queue.ts</div></div>
+          <div class="feature"><div class="name">Solo streak mode with global leaderboard</div><div class="desc">Lets players grind an endless single-player run and ranks them on a cross-pool global XP board, so there is a reason to come back even with nobody online.</div><div class="ev">apps/web/src/routes/[[locale=locale]]/solo/play/+page.svelte, apps/web/src/lib/server/leaderboard.ts, packages/partykit-server/src/solo-leaderboard/solo-leaderboard-room.ts</div></div>
+          <div class="feature"><div class="name">Accounts that survive a device switch</div><div class="desc">Bridges a guest UUID into a server-stored profile with Better Auth and passkey sign-in, so match history and ratings carry over instead of vanishing with cleared localStorage.</div><div class="ev">apps/web/src/lib/server/auth.ts, apps/web/src/lib/server/account-link.ts, infra/d1/schema.sql</div></div>
+          <div class="feature"><div class="name">Skill-rated match history</div><div class="desc">Updates a Glicko rating after each match and stores per-quiz skill scores so players can open a history page and watch their rating move over time.</div><div class="ev">apps/web/src/lib/server/glicko.ts, apps/web/src/lib/server/match-persist.ts, apps/web/src/routes/[[locale=locale]]/history/+page.svelte</div></div>
+          <div class="feature"><div class="name">Swappable content categories</div><div class="desc">Ships question packs (Polish YouTubers, top athletes, tech, Drupal) as standalone workspace modules wired into the picker, so adding a new topic is a data drop rather than a code change.</div><div class="ev">packages/categories/pl-youtubers/src/items.json, packages/categories/tech/src/items.json, packages/game-engine/src/game-module-registry.ts</div></div>
+          <div class="feature"><div class="name">Bilingual PWA with procedural sound</div><div class="desc">Serves type-safe Polish and English copy via Paraglide and generates all match SFX in WebAudio, so the app localizes and plays sound without shipping translation strings inline or hosting audio files.</div><div class="ev">apps/web/messages/pl.json, apps/web/messages/en.json, apps/web/src/lib/game/sound.ts</div></div>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow">Stack<span class="rule"></span></p>
+        <div class="stack-main">
+          <span class="tag">svelte <small>framework</small></span>
+          <span class="tag">better-sqlite3 <small>db/orm</small></span>
+          <span class="tag">drizzle-orm <small>db/orm</small></span>
+          <span class="tag">better-auth <small>auth</small></span>
+          <span class="tag">tailwindcss <small>styling</small></span>
+          <span class="tag">vite <small>build/test</small></span>
+          <span class="tag">vitest <small>build/test</small></span>
+        </div>
+        <div class="stack-group">
+          <div class="gl">Production</div>
+          <div class="tags">
+            <span class="tag">@better-auth/passkey ^1.6.9</span>
+            <span class="tag">@opentelemetry/api ^1.9.1</span>
+            <span class="tag">@simplewebauthn/browser ^11.0.0</span>
+            <span class="tag">@simplewebauthn/server ^11.0.0</span>
+            <span class="tag">better-auth ^1.6.9</span>
+            <span class="tag">canvas-confetti ^1.9.3</span>
+            <span class="tag">drizzle-orm ^0.45.2</span>
+            <span class="tag">jose ^6.2.3</span>
+            <span class="tag">openskill ^4.1.1</span>
+            <span class="tag">partysocket ^1.0.2</span>
+          </div>
+        </div>
+        <div class="stack-group">
+          <div class="gl">Dev</div>
+          <div class="tags">
+            <span class="tag">@cloudflare/workers-types ^4.20260502.1</span>
+            <span class="tag">@eslint/js ^9.16.0</span>
+            <span class="tag">@inlang/paraglide-js ^1.11.0</span>
+            <span class="tag">@inlang/paraglide-sveltekit ^0.15.0</span>
+            <span class="tag">@playwright/test ^1.49.0</span>
+            <span class="tag">@sveltejs/adapter-cloudflare ^7.2.8</span>
+            <span class="tag">@sveltejs/kit ^2.10.0</span>
+            <span class="tag">@sveltejs/vite-plugin-svelte ^5.0.0</span>
+            <span class="tag">@tailwindcss/vite ^4.0.0</span>
+            <span class="tag">@types/better-sqlite3 ^7.6.13</span>
+            <span class="tag">@types/canvas-confetti ^1.9.0</span>
+            <span class="tag">@types/node ^22.10.0</span>
+            <span class="tag">better-sqlite3 ^12.9.0</span>
+            <span class="tag">drizzle-kit ^0.31.10</span>
+            <span class="tag">eslint ^9.16.0</span>
+            <span class="tag">eslint-plugin-svelte ^2.46.0</span>
+            <span class="tag">globals ^15.13.0</span>
+            <span class="tag">jsdom ^26.0.0</span>
+            <span class="tag">partykit ^0.0.115</span>
+            <span class="tag">partysocket ^1.0.2</span>
+            <span class="tag">prettier ^3.4.0</span>
+            <span class="tag">prettier-plugin-svelte ^3.3.0</span>
+            <span class="tag">prettier-plugin-tailwindcss ^0.6.0</span>
+            <span class="tag">sharp ^0.33.5</span>
+            <span class="tag">start-server-and-test ^2.0.12</span>
+            <span class="tag">svelte ^5.10.0</span>
+            <span class="tag">svelte-check ^4.1.0</span>
+            <span class="tag">svelte-eslint-parser ^0.43.0</span>
+            <span class="tag">tailwindcss ^4.0.0</span>
+            <span class="tag">tsx ^4.19.2</span>
+            <span class="tag">typescript ^5.6.3</span>
+            <span class="tag">typescript-eslint ^8.18.0</span>
+            <span class="tag">vite ^6.0.0</span>
+            <span class="tag">vitest ^2.1.0</span>
+            <span class="tag">wrangler ^4.87.0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. ACTIVITY TIMELINE -->
+  <section>
+    <p class="eyebrow">Activity timeline<span class="rule"></span></p>
+    <div class="card panel chart">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Active tool time per session date">
+        <line class="axis-line" x1="24" y1="200" x2="736" y2="200"></line>
+        <rect class="bar" x="59.3" y="24" width="48" height="176" rx="0"></rect>
+        <text class="vlabel peak" x="83.3" y="16" text-anchor="middle">7h 14m</text>
+        <text class="dlabel" x="83.3" y="223" text-anchor="middle">04-26</text>
+        <rect class="bar" x="178.0" y="196" width="48" height="4" rx="0"></rect>
+        <text class="vlabel" x="202.0" y="188" text-anchor="middle">10m</text>
+        <text class="dlabel" x="202.0" y="223" text-anchor="middle">05-04</text>
+        <rect class="bar" x="296.7" y="189" width="48" height="11" rx="0"></rect>
+        <text class="vlabel" x="320.7" y="181" text-anchor="middle">28m</text>
+        <text class="dlabel" x="320.7" y="223" text-anchor="middle">05-04</text>
+        <rect class="bar" x="415.3" y="147" width="48" height="53" rx="0"></rect>
+        <text class="vlabel" x="439.3" y="139" text-anchor="middle">2h 9m</text>
+        <text class="dlabel" x="439.3" y="223" text-anchor="middle">05-05</text>
+        <rect class="bar" x="534.0" y="193" width="48" height="7" rx="0"></rect>
+        <text class="vlabel" x="558.0" y="185" text-anchor="middle">16m</text>
+        <text class="dlabel" x="558.0" y="223" text-anchor="middle">05-06</text>
+        <rect class="bar faint" x="652.7" y="197" width="48" height="3" rx="0"></rect>
+        <text class="vlabel" x="676.7" y="189" text-anchor="middle">9s</text>
+        <text class="dlabel" x="676.7" y="223" text-anchor="middle">05-30</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 6a. LANGUAGE BREAKDOWN -->
+  <section>
+    <p class="eyebrow">Language breakdown<span class="rule"></span></p>
+    <div class="card panel">
+      <div class="donut-wrap">
+        <div class="donut">
+          <svg viewBox="0 0 180 180">
+            <circle class="track" cx="90" cy="90" r="70" stroke-width="26"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke-width="26" stroke="var(--c1)" stroke-dasharray="300.39 139.43" stroke-dashoffset="0.00"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke-width="26" stroke="var(--c2)" stroke-dasharray="134.32 305.50" stroke-dashoffset="-300.39"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke-width="26" stroke="var(--c3)" stroke-dasharray="2.86 436.96" stroke-dashoffset="-434.71"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke-width="26" stroke="var(--c4)" stroke-dasharray="1.78 438.04" stroke-dashoffset="-437.57"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke-width="26" stroke="var(--c5)" stroke-dasharray="0.48 439.34" stroke-dashoffset="-439.34"></circle>
+          </svg>
+          <div class="donut-center">
+            <div class="big num">24,024</div>
+            <div class="sm">lines</div>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="leg"><span class="swatch" style="background:var(--c1)"></span><span class="lname">TypeScript</span><span class="lcount">16,408</span><span class="lpct num">68%</span></div>
+          <div class="leg"><span class="swatch" style="background:var(--c2)"></span><span class="lname">Svelte</span><span class="lcount">7,337</span><span class="lpct num">31%</span></div>
+          <div class="leg"><span class="swatch" style="background:var(--c3)"></span><span class="lname">CSS</span><span class="lcount">156</span><span class="lpct num">1%</span></div>
+          <div class="leg"><span class="swatch" style="background:var(--c4)"></span><span class="lname">JavaScript</span><span class="lcount">97</span><span class="lpct num">0%</span></div>
+          <div class="leg"><span class="swatch" style="background:var(--c5)"></span><span class="lname">HTML</span><span class="lcount">26</span><span class="lpct num">0%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="docs-stat term">
+      <div class="term-body"><span class="prompt">$</span>DOCS · 83 files · 35,222 lines</div>
+    </div>
+  </section>
+
+  <!-- 6b. TOP FILES -->
+  <section>
+    <p class="eyebrow">Top files <span class="count">10</span><span class="rule"></span></p>
+    <div class="card panel">
+      <div class="files">
+        <div class="file"><div class="row1"><span class="path">.../play/+page.svelte</span><span class="lines num">695<span> ln</span></span></div><div class="track"><div class="fill" style="width:100.0%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">.../match/match-room.ts</span><span class="lines num">651<span> ln</span></span></div><div class="track"><div class="fill" style="width:93.7%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">.../leaderboard/+page.svelte</span><span class="lines num">575<span> ln</span></span></div><div class="track"><div class="fill" style="width:82.7%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">.../solo-leaderboard/solo-leaderboard-room.ts</span><span class="lines num">455<span> ln</span></span></div><div class="track"><div class="fill" style="width:65.5%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">.../server/feedback.ts</span><span class="lines num">425<span> ln</span></span></div><div class="track"><div class="fill" style="width:61.2%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">.../lobby/lobby-room.ts</span><span class="lines num">402<span> ln</span></span></div><div class="track"><div class="fill" style="width:57.8%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">.../server/feedback.test.ts</span><span class="lines num">392<span> ln</span></span></div><div class="track"><div class="fill" style="width:56.4%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">.../account/+page.svelte</span><span class="lines num">387<span> ln</span></span></div><div class="track"><div class="fill" style="width:55.7%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">.../play/+page.svelte</span><span class="lines num">381<span> ln</span></span></div><div class="track"><div class="fill" style="width:54.8%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">.../match/round-flow.test.ts</span><span class="lines num">374<span> ln</span></span></div><div class="track"><div class="fill" style="width:53.8%"></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. SESSIONS -->
+  <section>
+    <p class="eyebrow">Sessions <span class="count">6</span><span class="rule"></span></p>
+    <div class="sessions">
+      <div class="sess"><div class="date">2026-04-26</div><div class="at num">7h 14min</div><div class="meta num">3042 tool calls<br>top: <b>Bash</b></div></div>
+      <div class="sess"><div class="date">2026-05-04</div><div class="at num">10min</div><div class="meta num">251 tool calls<br>top: <b>Edit</b></div></div>
+      <div class="sess"><div class="date">2026-05-04</div><div class="at num">28min</div><div class="meta num">152 tool calls<br>top: <b>Bash</b></div></div>
+      <div class="sess"><div class="date">2026-05-05</div><div class="at num">2h 9min</div><div class="meta num">697 tool calls<br>top: <b>Bash</b></div></div>
+      <div class="sess"><div class="date">2026-05-06</div><div class="at num">16min</div><div class="meta num">269 tool calls<br>top: <b>Bash</b></div></div>
+      <div class="sess"><div class="date">2026-05-30</div><div class="at num">9s</div><div class="meta num">8 tool calls<br>top: <b>Bash</b></div></div>
+    </div>
+  </section>
+
+  <!-- 8. COMMIT LOG -->
+  <section>
+    <p class="eyebrow">Commit log<span class="rule"></span></p>
+    <div class="log term">
+      <div class="term-bar"><span>GIT LOG</span><span>--oneline</span></div>
+      <div class="term-body">
+        <div class="line"><span class="d">2026-04-26</span><span class="s">chore: bootstrap monorepo (pnpm workspace, tsconfig base, gitignore)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">chore: tighten tsconfig + pin pnpm via packageManager</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): scaffold SvelteKit app with Cloudflare adapter</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">fix(web): address Task 2 code review follow-ups</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): add Tailwind v4 + theme tokens (dark default)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): add Paraglide i18n with PL+EN and locale-prefixed routes</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(partykit): scaffold hello echo room with unit tests</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(shared-types): add v0 WS protocol types</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): add WS client + connect to hello echo room</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(infra): add D1 schema, migrations, wrangler config</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">docs: add Cloudflare deployment instructions</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">test(web): add Playwright smoke E2E (locale + WS echo)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">chore: add ESLint flat config + Prettier</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">ci: add GitHub Actions workflow (typecheck, lint, unit, e2e)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">fix: typecheck across workspace + skip vitest in apps/web until tests exist</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): add nick validation (pure + tested)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): add guest user store (UUID + nick, localStorage-backed) + vitest config</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): add sound mute preference store</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">docs: add Phase 2 implementation plan (onboarding + main menu)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/i18n): add onboarding + menu + how-to-play strings (PL/EN)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): self-host Geist Sans + Space Grotesk variable fonts</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/ui): add PrimaryButton, BrandLogo, Modal primitives</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/ui): add NavHeader with locale + mute + nick badge</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/ui): add MenuCard primitive (gradient + accent variants)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): replace WS smoke test with landing + nick entry + menu + how-to-play</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">test(web): cover onboarding + menu flow with Playwright</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">fix(web): suppress 3 lint warnings (intentional control-char regex, Svelte 5 $derived, rest props)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">docs: add Phase 3 implementation plan (game engine + single-player)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(game-engine): bootstrap package + types (GameModule contract)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(game-engine): scoring rules (+2 first correct, +1 second, 0 wrong/timeout)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(game-engine): seedable PRNG (mulberry32) + pickN helper</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(game-engine): higher-or-lower module + composeRound + sudden death</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(game-engine): match runner orchestrator (lifecycle + subscribe)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(game-engine): bot opponent (75% accuracy default, 1.5-4s delay)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(categories): add pl-youtubers (~40 channels, subscriber counts)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/i18n): add gameplay + result strings (PL/EN)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/game): per-nick stats (matches/wins/losses/streak) in localStorage</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/game): match controller + sound/haptic stubs (vs bot mode)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/ui): add game UI components (Avatar, RoundCard, HigherLowerButtons, ScoreTracker, Countdown, OpponentAnswered, Confetti)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): add /play (vs bot) + /play/result routes; menu Quick Match wires up</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">test(web): cover vs-bot match flow + Play again with Playwright</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">fix(web): result page persistence + valid Geist font</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">docs(spec): add Phase 7 polish backlog items found during live testing</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">docs: add Phase 4 implementation plan (real multiplayer via DOs)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(game-engine): PublicRoundData + toPublicRound() (anti-cheat helper)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(shared-types): WS protocol v1 (lobby + match) + JWT claims</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">chore(web): remove dead ws-client.ts (replaced by RemoteMatchController in Phase 4)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(partykit/auth): JWT sign/verify (HS256 via jose)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(partykit/lobby): FIFO queue with category pools (TDD)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(partykit/match): server-side round flow (anti-cheat: publicRound, server timing)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(partykit/lobby): WS room with FIFO matchmaking + auth gate + /issue-token endpoint</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(partykit/match): match room (server-auth gameplay, reconnect, rematch, forfeit)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">refactor(web/game): extract MatchController interface; rename Bot impl</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/game): RemoteMatchController (WS-backed via PartyKit)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/i18n): lobby + disconnect + forfeit strings (PL/EN)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): lobby UI + /play branching (online vs bot mode)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">test(web): two-tab Playwright E2E for online match + cancel</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">fix(web/game): drop unused Answer import in bot-controller</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">fix(web): properly unsubscribe controller state on cleanup</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">docs(spec): document Phase 4.1 hardening items (prod multiplayer verification, match-token, DO storage)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">docs: add Phase 5 plan (friend invite + rematch)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/game): rematch support — extend controller interface, wire up remote rematch flow</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/i18n): friend invite + rematch strings (PL/EN)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/i18n): friend invite + rematch strings (PL — second pass)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web/ui): FriendInviteModal + ResultOverlay components</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): friend invite flow + inline result overlay + rematch wired up</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">test(web): Playwright E2E for friend invite flow</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">fix(web/menu): wire &#x27;Play with friend&#x27; to /play?mode=friend (Task 7 step missed in Phase 5 commit)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">docs: add Phase 6 plan (categories #2 + #3 + picker)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(categories): add top-athletes (~76 athletes, IG followers)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(categories): add tech (~57 items: LLMs, dev tools, frameworks, multi-attr)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(server+web): wire 3 categories to match DO via WS query + lobby pass categoryId in match_found</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): category picker + /play passes selected category to controllers/lobby</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">docs: add Phase 7 plan (polish + soft launch prep)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): Phase 7 polish — round timer, sudden death badge, loss animation, WebAudio SFX (8 sounds)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">docs: README v1.0 deployment runbook + soft launch checklist</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">security: HIGH+MEDIUM hardening (auth-001, config-001, config-002, exposure-001, rate-limit-001, business-logic-001/002)</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): UX overhaul — explicit round question, KNOWN/GUESS cards, contextual buttons, result feedback, stats, tutorial</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): Stadium System redesign — sports-broadcast HUD, safety orange, industrial mono</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">ux(web): readability pass — bigger type, isolated question block, real 4 s countdown</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">ux(web): bigger landing stats, live wall clock, full-width KNOWN/GUESS header, redesigned how-to-play</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">ux(web): epic /play/result — hero plate + headline stats + mini receipt + locale-aware sizing</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">feat(web): ShareSheet, privacy page, bug-report header link — pre-launch polish</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">docs(scheduler): seed handoff + per-run prompt for autonomous Phase 7.1 + post-MVP work</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">auto(7.1.A): add MatchSnapshot serialize/fromSnapshot on ServerMatch</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">auto(7.1.A): wire DO storage rehydration for MatchRoom</span></div>
+        <div class="line"><span class="d">2026-04-26</span><span class="s">auto(7.1.A+7.1.B): close 7.1.A docs flip, scaffold validated /og endpoint</span></div>
+        <div class="line"><span class="d">2026-04-27</span><span class="s">auto(7.1.B): render real Stadium-styled OG SVG body</span></div>
+        <div class="line"><span class="d">2026-04-27</span><span class="s">auto(7.1.B): wire live /og share URL into share text on last line</span></div>
+        <div class="line"><span class="d">2026-04-27</span><span class="s">auto(7.1.B): add OG / Twitter meta tags to app.html</span></div>
+        <div class="line"><span class="d">2026-04-27</span><span class="s">auto(7.1.C): add test:e2e:preview infra for production-bundle Playwright</span></div>
+        <div class="line"><span class="d">2026-04-27</span><span class="s">auto(7.1.C): close 7.1.C with preview-build spec + production-verification doc</span></div>
+        <div class="line"><span class="d">2026-04-27</span><span class="s">auto(PMVP.A): add youtubeChannelId field to pl-youtubers items</span></div>
+        <div class="line"><span class="d">2026-04-27</span><span class="s">auto(PMVP.A): add fetch-yt-avatars script + operator README</span></div>
+        <div class="line"><span class="d">2026-04-27</span><span class="s">auto(PMVP.B): add openskill rating helpers + tests</span></div>
+        <div class="line"><span class="d">2026-04-27</span><span class="s">auto(PMVP.B): add rating field + lazy migration to guest-user store</span></div>
+        <div class="line"><span class="d">2026-04-27</span><span class="s">auto(PMVP.B): wire applyMatch + setRating into online/friend match end</span></div>
+        <div class="line"><span class="d">2026-04-27</span><span class="s">auto(PMVP.B): render rating chip in NavHeader + delta on result hero</span></div>
+        <div class="line"><span class="d">2026-04-27</span><span class="s">auto(follow-on): fix app-html strict-null + add rating-chip preview e2e</span></div>
+        <div class="line"><span class="d">2026-04-27</span><span class="s">chore: ignore .claude/ local config dir</span></div>
+        <div class="line"><span class="d">2026-05-01</span><span class="s">feat(solo): add singleplayer streak mode + global leaderboard (#1)</span></div>
+        <div class="line"><span class="d">2026-05-01</span><span class="s">fix(solo): rename party `solo-leaderboard` → `solo` (PartyKit bundler can&#x27;t import a hyphenated identifier)</span></div>
+        <div class="line"><span class="d">2026-05-02</span><span class="s">feat(account): phase 1 — D1 + Better Auth scaffold (#2)</span></div>
+        <div class="line"><span class="d">2026-05-02</span><span class="s">ci: drop   hardcoded pnpm version</span></div>
+        <div class="line"><span class="d">2026-05-02</span><span class="s">fix(security): pre-launch hardening + unblock prod build (#3)</span></div>
+        <div class="line"><span class="d">2026-05-03</span><span class="s">build: migrate to Workers Builds format (wrangler deploy + assets binding) (#4)</span></div>
+        <div class="line"><span class="d">2026-05-03</span><span class="s">fix(auth): unblock Better Auth on Cloudflare Workers (#5)</span></div>
+        <div class="line"><span class="d">2026-05-03</span><span class="s">fix(web): security headers via SvelteKit hook (Workers Builds compat) (#6)</span></div>
+        <div class="line"><span class="d">2026-05-03</span><span class="s">fix(web): absolute asset paths + allow Google Fonts in CSP (#7)</span></div>
+        <div class="line"><span class="d">2026-05-03</span><span class="s">fix(csp): use SvelteKit kit.csp so inline hydration script is allowed (#8)</span></div>
+        <div class="line"><span class="d">2026-05-03</span><span class="s">docs(devops): add Cloudflare deploy &amp; DevOps guide (#9)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">fix(ux): bug-report link, /account explainer, honest landing stats (#10)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">fix: prod default for PUBLIC_PARTYKIT_HOST + drop double locale prefix (#11)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">fix(menu): Quick Match chip — honest copy, no fake counts (#12)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">fix: roadmap snapshot + bug batch (B1, B5, B6, B7) (#13)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">fix(nav): nick chip → /account; nick page pre-fills current nick (#14)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">feat(account): phase 2 — server-stored profile + JWT bridge (#15)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">feat(account): phase 3 — match + solo persistence in D1 (#16)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">feat(mvp): cleanup + Glicko ELO + /history page + passkey support (#17)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">fix(partykit): friend-invite log surface jose error message (#18)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">fix(invite): preserve deep-link query params across nick redirect (#19)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">docs: spec for multi-choice quiz game mode + roadmap entry (#20)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">feat: multi-choice game mode (Drupal/PHP quiz) (#21)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">fix(partykit): add drupal-php and drupal to KNOWN_CATEGORY_IDS (#22)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">feat: in-app feedback forms (general + per-question) with Resend (#23)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">fix(solo): use SoloRoundLog.category.id instead of fragile qid prefix derive (#24)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">feat: user nationality + per-quiz skill scores (#25)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">debug(solo): instrument skill upsert with stage tracking + try/catch (#26)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">fix(solo): accept multi-choice numeric answers in submit-run validation (#27)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">fix(csp): add worker-src &#x27;self&#x27; blob: to allow canvas-confetti web worker (#28)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">fix(quickmatch): filter CategoryPicker to HL-only categories (#29)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">feat(ui): widen desktop layout + responsive fonts + MC question polish (#30)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">feat(history): load-more buttons for matches + solo runs (#31)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">feat(brand): rebrand DUELS → FASTDUELS + bump BrandLogo sizes (#32)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">feat(i18n): migrate hardcoded locale ternaries to paraglide keys (#33)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">feat(i18n): EN as default locale (no URL prefix) (#34)</span></div>
+        <div class="line"><span class="d">2026-05-04</span><span class="s">fix(i18n): translate 10 PL keys that still showed English (#35)</span></div>
+        <div class="line"><span class="d">2026-05-05</span><span class="s">docs(devops): CLI runbook for prod ops without CF dashboard (#36)</span></div>
+        <div class="line"><span class="d">2026-05-05</span><span class="s">fix(ux): remove distracting stripes + fastduels CORS + mobile dvh (#37)</span></div>
+        <div class="line"><span class="d">2026-05-05</span><span class="s">feat(multiplayer): enable multi-choice categories (Drupal, Drupal-PHP) (#38)</span></div>
+        <div class="line"><span class="d">2026-05-05</span><span class="s">feat(domain): fastduels.com becomes PRIMARY, duelack.com → 301 (#39)</span></div>
+        <div class="line"><span class="d">2026-05-05</span><span class="s">fix(mc): align option display-order with correctAnswer in pickers (#40)</span></div>
+        <div class="line"><span class="d">2026-05-05</span><span class="s">ci: fix sqlite tests + auto-deploy web/partykit on push to main (#41)</span></div>
+        <div class="line"><span class="d">2026-05-06</span><span class="s">feat(ux): sticky Play CTA on category picker + side-by-side red/green HL buttons (#43)</span></div>
+        <div class="line"><span class="d">2026-05-06</span><span class="s">feat(ux): sticky game buttons during play + 2-row mobile header (#44)</span></div>
+        <div class="line"><span class="d">2026-05-06</span><span class="s">feat(leaderboard): cross-pool global XP ranking + empty-state CTAs (#45)</span></div>
+        <div class="line"><span class="d">2026-05-06</span><span class="s">feat(homepage): live stats — dueling now + today/all-time/countries/top category (#46)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. FOOTER -->
+  <footer class="num">Generated 2026-05-30 12:35 GMT+2 · v1.0.0</footer>
+
+</div>
+
+<script>
+  /* Theme toggle (vanilla, persisted). Default light; restore from pd-theme. */
+  (function () {
+    var root = document.documentElement;
+    var bd = document.getElementById('t-dark');
+    var bl = document.getElementById('t-light');
+    var KEY = 'pd-theme';
+
+    function apply(theme) {
+      root.setAttribute('data-theme', theme);
+      var dark = theme === 'dark';
+      bd.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      bl.setAttribute('aria-pressed', dark ? 'false' : 'true');
+      try { localStorage.setItem(KEY, theme); } catch (e) {}
+    }
+
+    try {
+      var saved = localStorage.getItem(KEY);
+      if (saved === 'light' || saved === 'dark') apply(saved);
+    } catch (e) {}
+
+    bd.addEventListener('click', function () { apply('dark'); });
+    bl.addEventListener('click', function () { apply('light'); });
+  })();
+</script>
+</body>
+</html>

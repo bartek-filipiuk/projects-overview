@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>duels · overview</title>
+<script>document.documentElement.classList.add('js')</script>
+<style>
+  /* ============ CANONICAL THEME BLOCK (source of truth) ============ */
+  :root {
+    --bg:#F5F0E8; --bg-soft:#EFE8D7; --surface:#FFFFFF; --fg:#0A0A0A;
+    --border:#000000; --line:rgba(0,0,0,.16); --dim:#5C5648;
+    --accent:#1A7A1A; --warn:#D97706;
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+    --maxw:1100px;
+    --c1:#1A7A1A; --c2:#0E6BA8; --c3:#B8336A; --c4:#D97706; --c5:#5E548E; --c6:#5C5648;
+  }
+  html[data-theme="dark"]{
+    --bg:#0B0B0B; --bg-soft:#141414; --surface:#161616; --fg:#EDEDE6;
+    --border:#EDEDE6; --line:rgba(255,255,255,.18); --dim:#8A8474;
+    --accent:#3FB950; --warn:#E8902E;
+    --c1:#3FB950; --c2:#4493D6; --c3:#D86A98; --c4:#E8902E; --c5:#9A8FD0; --c6:#8A8474;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);
+    font-feature-settings:"liga" 0,"calt" 0;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+  .card{border:2px solid var(--border);background:var(--surface);padding:18px;border-radius:0;}
+  .push{transition:transform 90ms linear,box-shadow 90ms linear;}
+  .push:hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 0 var(--border);}
+  .tag{display:inline-block;border:2px solid var(--border);background:var(--bg);padding:3px 9px;
+    font-size:12px;font-family:var(--mono);}
+  .tag.empty{border-style:dashed;color:var(--dim);}
+  .term{border:2px solid var(--border);background:var(--bg-soft);}
+  .term-bar{background:var(--fg);color:var(--bg);padding:7px 12px;font-size:11px;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;}
+  .term-body{padding:14px;}
+  .site-nav{display:flex;align-items:center;border-bottom:2px solid var(--border);position:sticky;
+    top:0;z-index:50;background:var(--bg);}
+  .site-nav .brand{padding:14px 16px;font-weight:700;}
+  .site-nav a{padding:14px 16px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;
+    border-left:2px solid var(--border);}
+  .site-nav a:hover,.site-nav a[aria-current="page"]{background:var(--fg);color:var(--bg);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  @media (prefers-reduced-motion:reduce){.push:hover{transform:none;box-shadow:none;}}
+
+  /* ============ NAV THEME TOGGLE (segmented, brutalist) ============ */
+  .site-nav .seg { margin-left: auto; display: inline-flex; border-left: 2px solid var(--border); flex: none; }
+  .site-nav .seg button {
+    appearance: none; border: 0; border-left: 2px solid var(--border);
+    background: var(--bg); color: var(--dim);
+    font: inherit; font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: .04em; text-transform: uppercase; padding: 14px 14px; cursor: pointer;
+  }
+  .site-nav .seg button:first-child { border-left: 0; }
+  .site-nav .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .site-nav .seg button:hover { background: var(--fg); color: var(--bg); }
+  .site-nav .brand { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 38vw; }
+  /* local override (not in canonical block): let nav wrap so the toggle drops to a
+     second row on narrow screens (~375px) instead of causing horizontal overflow. */
+  .site-nav { flex-wrap: wrap; }
+
+  /* ============ LAYOUT SCAFFOLD ============ */
+  .wrap { padding: 0 clamp(20px, 4vw, 40px) 80px; }
+  section { margin-top: 56px; }
+  .eyebrow {
+    display: flex; align-items: baseline; gap: 10px;
+    font-size: 12px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--fg); margin: 0 0 20px;
+  }
+  .eyebrow::before { content: "$"; color: var(--accent); }
+  .eyebrow .rule { flex: 1 1 auto; height: 0; border-top: 1px dashed var(--line); transform: translateY(-3px); }
+
+  /* ============ HERO (big mono headline) ============ */
+  header.hero {
+    max-width: var(--maxw); margin: 0 auto;
+    padding: clamp(48px, 9vh, 96px) clamp(20px, 4vw, 40px) clamp(32px, 5vh, 56px);
+  }
+  .hero .kicker {
+    font-size: 12px; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 20px;
+  }
+  .hero .kicker::before { content: "$ "; }
+  .hero h1 {
+    font-family: var(--mono);
+    font-size: clamp(38px, 7vw, 84px); font-weight: 800;
+    letter-spacing: -0.03em; line-height: 1.0; margin: 0 0 26px;
+    color: var(--fg); text-wrap: balance; overflow-wrap: anywhere;
+  }
+  .hero .idea {
+    font-family: var(--mono);
+    font-size: clamp(16px, 2.4vw, 22px); font-weight: 400;
+    line-height: 1.5; color: var(--dim); max-width: 62ch; margin: 0; text-wrap: pretty;
+  }
+  .hero .live { margin: 24px 0 0; font-size: 15px; }
+
+  /* ============ STACK AT A GLANCE ============ */
+  /* main stack — prominent, larger bordered chips */
+  .stack-main {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    padding-bottom: 22px; margin-bottom: 22px;
+    border-bottom: 2px solid var(--border);
+  }
+  .stack-main .tag {
+    font-size: 14px; font-weight: 700; padding: 9px 14px;
+    background: var(--surface);
+  }
+  .stack-main .tag small {
+    color: var(--dim); font-size: 11px; font-weight: 400;
+    margin-left: 7px; text-transform: lowercase; letter-spacing: 0;
+  }
+  .stack-main .tag.empty { font-weight: 400; background: var(--bg); }
+
+  /* full stack — secondary, collapsed under a details disclosure */
+  .stack-full { margin-top: 4px; }
+  .stack-full > summary {
+    cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--dim); border: 2px solid var(--border); background: var(--bg);
+    padding: 7px 12px; user-select: none;
+  }
+  .stack-full > summary::-webkit-details-marker { display: none; }
+  .stack-full > summary::before { content: "+ "; color: var(--accent); font-weight: 800; }
+  .stack-full[open] > summary::before { content: "− "; }
+  .stack-full > summary:hover { background: var(--fg); color: var(--bg); }
+  .stack-full[open] > summary { margin-bottom: 16px; }
+  .stack-group + .stack-group { margin-top: 20px; }
+  .stack-group .gl {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--dim); margin-bottom: 12px;
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tags .tag { font-size: 12px; padding: 4px 10px; }
+
+  /* ============ WHY-STACK CARDS ============ */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .why-card { display: flex; flex-direction: column; }
+  .why-card .choice {
+    font-family: var(--mono); font-size: 17px; font-weight: 800;
+    letter-spacing: -0.01em; line-height: 1.25; color: var(--fg);
+    margin: 0 0 10px; text-wrap: pretty;
+  }
+  .why-card .choice::before { content: "› "; color: var(--accent); }
+  .why-card .why {
+    color: var(--dim); font-size: 14px; line-height: 1.55;
+    margin: 0 0 16px; text-wrap: pretty;
+  }
+  .deep {
+    margin-top: auto; font-size: 13px; font-weight: 700;
+    color: var(--accent); text-decoration: none;
+    border-bottom: 2px solid var(--accent); padding-bottom: 1px;
+    align-self: flex-start;
+  }
+  .deep:hover { background: var(--accent); color: var(--bg); }
+  .deep:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .why-note {
+    color: var(--dim); font-size: 14px; line-height: 1.6; max-width: 62ch; margin: 0;
+  }
+
+  /* ============ VALUE POINTS (What it gives you) ============ */
+  .value { list-style: none; margin: 0; padding: 0; max-width: 72ch; }
+  .value li {
+    padding: 16px 0; border-top: 1px dashed var(--line);
+    color: var(--fg); font-size: 15px; line-height: 1.55; text-wrap: pretty;
+  }
+  .value li:first-child { border-top: 0; padding-top: 0; }
+  .value li::before { content: "› "; color: var(--accent); font-weight: 800; }
+  .value li b { font-weight: 700; color: var(--accent); }
+
+  /* ============ DOORS (big link cards: Data + Course + Security) ============ */
+  .doors { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+  .door {
+    display: flex; flex-direction: column; justify-content: space-between;
+    min-height: 168px; padding: 28px 30px; text-decoration: none; color: var(--fg);
+  }
+  .door .dlbl {
+    font-size: 11px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--dim); margin: 0 0 14px;
+  }
+  .door .dlbl::before { content: "$ "; color: var(--accent); }
+  .door .dtitle {
+    font-family: var(--mono); font-size: clamp(26px, 3.4vw, 38px); font-weight: 800;
+    letter-spacing: -0.015em; line-height: 1.05; display: flex; align-items: center; gap: 12px;
+  }
+  .door .dtitle .arrow { color: var(--accent); transition: transform .18s ease; }
+  .door:hover .dtitle .arrow { transform: translateX(4px); }
+  .door .ddesc { color: var(--dim); font-size: 14px; line-height: 1.5; margin: 14px 0 0; }
+  /* disabled door (thin project — course unavailable). Not hidden: layout stays coherent. */
+  .door.disabled {
+    cursor: not-allowed; background: var(--bg-soft);
+    border-style: dashed; color: var(--dim); pointer-events: none;
+  }
+  .door.disabled:hover { transform: none; box-shadow: none; }
+  .door.disabled .dtitle { color: var(--dim); }
+  .door.disabled .dtitle .arrow { color: var(--dim); }
+  .door.disabled .ddesc { color: var(--dim); }
+
+  /* ============ FOOTER ============ */
+  footer {
+    margin-top: 72px; padding-top: 22px;
+    border-top: 2px solid var(--border); text-align: center;
+    color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 680px) {
+    .doors { grid-template-columns: 1fr; }
+    .site-nav .brand { max-width: 28vw; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ SHARED TOP-NAV (canonical brutalist) ============ -->
+<nav class="site-nav" aria-label="Project site">
+  <span class="brand">duels</span>
+  <a href="index.html" data-page="overview" aria-current="page">Overview</a>
+  <a href="report.html" data-page="data">Data</a>
+  <a href="course.html" data-page="course">Course</a>  <div class="seg" role="group" aria-label="Color theme">
+    <button id="t-light" aria-pressed="true">Light</button>
+    <button id="t-dark" aria-pressed="false">Dark</button>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <p class="kicker">Project overview</p>
+  <h1>duels</h1>
+  <p class="idea">Two strangers, one ~90-second head-to-head duel, no install and no account — a web platform where matchmaking, scoring, and every answer reveal run server-side at the edge, so the game stays fast and stays cheat-proof.</p>
+  <p class="live"><a class="deep" href="https://fastduels.com" target="_blank" rel="noopener">Play live at fastduels.com <span aria-hidden="true">&rarr;</span></a></p>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ STACK AT A GLANCE ============ -->
+  <section>
+    <p class="eyebrow">Stack at a glance<span class="rule"></span></p>
+    <div class="stack-main">
+      <span class="tag">svelte <small>framework</small></span>
+      <span class="tag">better-sqlite3 <small>db/orm</small></span>
+      <span class="tag">drizzle-orm <small>db/orm</small></span>
+      <span class="tag">better-auth <small>auth</small></span>
+      <span class="tag">tailwindcss <small>styling</small></span>
+      <span class="tag">vite <small>build/test</small></span>
+      <span class="tag">vitest <small>build/test</small></span>
+    </div>
+    <details class="stack-full">
+      <summary>full stack</summary>
+      <div class="stack-group"><div class="gl">Production</div><div class="tags"><span class="tag">@better-auth/passkey ^1.6.9</span><span class="tag">@opentelemetry/api ^1.9.1</span><span class="tag">@simplewebauthn/browser ^11.0.0</span><span class="tag">@simplewebauthn/server ^11.0.0</span><span class="tag">canvas-confetti ^1.9.3</span><span class="tag">jose ^6.2.3</span><span class="tag">openskill ^4.1.1</span><span class="tag">partysocket ^1.0.2</span></div></div>
+      <div class="stack-group"><div class="gl">Dev</div><div class="tags"><span class="tag">@cloudflare/workers-types ^4.20260502.1</span><span class="tag">@eslint/js ^9.16.0</span><span class="tag">@inlang/paraglide-js ^1.11.0</span><span class="tag">@inlang/paraglide-sveltekit ^0.15.0</span><span class="tag">@playwright/test ^1.49.0</span><span class="tag">@sveltejs/adapter-cloudflare ^7.2.8</span><span class="tag">@sveltejs/kit ^2.10.0</span><span class="tag">@sveltejs/vite-plugin-svelte ^5.0.0</span><span class="tag">@tailwindcss/vite ^4.0.0</span><span class="tag">@types/better-sqlite3 ^7.6.13</span><span class="tag">@types/canvas-confetti ^1.9.0</span><span class="tag">@types/node ^22.10.0</span><span class="tag">drizzle-kit ^0.31.10</span><span class="tag">eslint ^9.16.0</span><span class="tag">eslint-plugin-svelte ^2.46.0</span><span class="tag">globals ^15.13.0</span><span class="tag">jsdom ^26.0.0</span><span class="tag">partykit ^0.0.115</span><span class="tag">prettier ^3.4.0</span><span class="tag">prettier-plugin-svelte ^3.3.0</span><span class="tag">prettier-plugin-tailwindcss ^0.6.0</span><span class="tag">sharp ^0.33.5</span><span class="tag">start-server-and-test ^2.0.12</span><span class="tag">svelte-check ^4.1.0</span><span class="tag">svelte-eslint-parser ^0.43.0</span><span class="tag">tsx ^4.19.2</span><span class="tag">typescript ^5.6.3</span><span class="tag">typescript-eslint ^8.18.0</span><span class="tag">wrangler ^4.87.0</span></div></div>
+    </details>
+  </section>
+
+  <!-- ============ WHY THIS STACK ============ -->
+  <section>
+    <p class="eyebrow">Why this stack<span class="rule"></span></p>
+    <div class="why-grid">
+    <div class="why-card">
+      <p class="choice">Realtime on Durable Objects, not a socket server</p>
+      <p class="why">Each match is its own in-memory stateful object at the edge, so there is no global lock and the per-message ping never waits on a database — D1 is touched only at session boundaries.</p>
+      <a class="deep" href="course.html#beat-realtime-on-durable-objects">full decision in the course &rarr;</a>
+    </div>
+    <div class="why-card">
+      <p class="choice">Anonymous-first accounts with Better Auth</p>
+      <p class="why">Players still just type a nick, but identity lives in a server session from the first touch — so it survives a cache clear or a device switch, and signing in is offered only once there is a win worth saving.</p>
+      <a class="deep" href="course.html#beat-anonymous-first-auth">full decision in the course &rarr;</a>
+    </div>
+    <div class="why-card">
+      <p class="choice">A pure-TypeScript engine with zero Cloudflare imports</p>
+      <p class="why">The same game logic runs in a Worker, a browser, and a Node test unchanged — which is what makes the documented ~one-week migration off Cloudflare credible, and what lets the server replay runs to catch cheaters.</p>
+      <a class="deep" href="course.html#beat-thin-transport-escape-hatch">full decision in the course &rarr;</a>
+    </div>
+    <div class="why-card">
+      <p class="choice">The server replays every run; the client score is never trusted</p>
+      <p class="why">The deterministic engine re-runs the exact rounds from the same seed and scores from scratch, so a client&#x27;s tally is only a claim to verify — topping the leaderboard still means actually playing a correct game.</p>
+      <a class="deep" href="course.html#beat-server-replay-scoring">full decision in the course &rarr;</a>
+    </div>
+    <div class="why-card">
+      <p class="choice">One GameModule contract every game implements</p>
+      <p class="why">The platform never imports a specific game, so when multi-choice arrived months later it slotted in as a single new case with the three existing categories untouched.</p>
+      <a class="deep" href="course.html#beat-game-module-boundary">full decision in the course &rarr;</a>
+    </div>
+    </div>
+  </section>
+
+  <!-- ============ WHAT IT GIVES YOU ============ -->
+  <section>
+    <p class="eyebrow">What it gives you<span class="rule"></span></p>
+    <ul class="value">
+      <li><b>Instant guest matches</b> — land on the page and you are in a live 1v1 within seconds — just a nickname, nothing to install or sign up for.</li>
+      <li><b>Cheat-proof duels</b> — every answer reveal stays inside the Match Durable Object and each WebSocket message is JWT-signed, so a tampered client cannot peek or fake a win.</li>
+      <li><b>Never wait for an opponent</b> — an empty matchmaking queue falls back to a bot, so you always get a full match instead of staring at a lobby spinner.</li>
+      <li><b>Solo streak mode + global board</b> — an endless single-player run ranked on a cross-pool global XP board gives a reason to come back even without an opponent online.</li>
+      <li><b>Accounts that survive a device switch</b> — a guest UUID upgrades into a Better Auth profile with passkey sign-in, so match history and rating carry over instead of vanishing.</li>
+      <li><b>Swappable content categories</b> — question packs ship as standalone workspace modules wired into the picker, so a new topic is a new package — not a rewrite.</li>
+    </ul>
+  </section>
+
+  <!-- ============ TWO DOORS ============ -->
+  <section class="doors">
+    <a class="card push door" href="report.html">
+      <p class="dlbl">The numbers</p>
+      <span class="dtitle">Data <span class="arrow" aria-hidden="true">&rarr;</span></span>
+      <p class="ddesc">LOC, build time, sessions, language split, commit history, and the full file-by-file breakdown.</p>
+    </a>
+    <a class="card push door" href="course.html">
+      <p class="dlbl">Why it's built this way</p>
+      <span class="dtitle">Course <span class="arrow" aria-hidden="true">&rarr;</span></span>
+      <p class="ddesc">A cinematic &bdquo;why&rdquo; course &mdash; the architectural decisions, the traps they avoid, and the roads not taken.</p>
+    </a>  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="num">Generated 2026-05-30 14:09 GMT+2 · v1.0.0</footer>
+
+</div>
+
+<script>
+  /* Theme toggle (vanilla, persisted). Default light; restore from ps-theme. */
+  (function () {
+    var root = document.documentElement;
+    var bd = document.getElementById('t-dark');
+    var bl = document.getElementById('t-light');
+    var KEY = 'ps-theme';
+
+    function apply(theme) {
+      root.setAttribute('data-theme', theme);
+      var dark = theme === 'dark';
+      bd.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      bl.setAttribute('aria-pressed', dark ? 'false' : 'true');
+      try { localStorage.setItem(KEY, theme); } catch (e) {}
+    }
+
+    try {
+      var saved = localStorage.getItem(KEY);
+      if (saved === 'light' || saved === 'dark') apply(saved);
+    } catch (e) {}
+
+    bd.addEventListener('click', function () { apply('dark'); });
+    bl.addEventListener('click', function () { apply('light'); });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>duels · masterclass</title>
+<script>document.documentElement.classList.add('js')</script>
+<style>
+  /* ============ CANONICAL THEME BLOCK (source of truth) ============ */
+  :root {
+    --bg:#F5F0E8; --bg-soft:#EFE8D7; --surface:#FFFFFF; --fg:#0A0A0A;
+    --border:#000000; --line:rgba(0,0,0,.16); --dim:#5C5648;
+    --accent:#1A7A1A; --warn:#D97706;
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+    --maxw:1100px;
+    --c1:#1A7A1A; --c2:#0E6BA8; --c3:#B8336A; --c4:#D97706; --c5:#5E548E; --c6:#5C5648;
+  }
+  html[data-theme="dark"]{
+    --bg:#0B0B0B; --bg-soft:#141414; --surface:#161616; --fg:#EDEDE6;
+    --border:#EDEDE6; --line:rgba(255,255,255,.18); --dim:#8A8474;
+    --accent:#3FB950; --warn:#E8902E;
+    --c1:#3FB950; --c2:#4493D6; --c3:#D86A98; --c4:#E8902E; --c5:#9A8FD0; --c6:#8A8474;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);
+    font-feature-settings:"liga" 0,"calt" 0;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+  .card{border:2px solid var(--border);background:var(--surface);padding:18px;border-radius:0;}
+  .push{transition:transform 90ms linear,box-shadow 90ms linear;}
+  .push:hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 0 var(--border);}
+  .tag{display:inline-block;border:2px solid var(--border);background:var(--bg);padding:3px 9px;
+    font-size:12px;font-family:var(--mono);}
+  .tag.empty{border-style:dashed;color:var(--dim);}
+  .term{border:2px solid var(--border);background:var(--bg-soft);}
+  .term-bar{background:var(--fg);color:var(--bg);padding:7px 12px;font-size:11px;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;}
+  .term-body{padding:14px;}
+  .site-nav{display:flex;align-items:center;border-bottom:2px solid var(--border);position:sticky;
+    top:0;z-index:50;background:var(--bg);}
+  .site-nav .brand{padding:14px 16px;font-weight:700;}
+  .site-nav a{padding:14px 16px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;
+    border-left:2px solid var(--border);}
+  .site-nav a:hover,.site-nav a[aria-current="page"]{background:var(--fg);color:var(--bg);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  @media (prefers-reduced-motion:reduce){.push:hover{transform:none;box-shadow:none;}}
+
+  /* ============ COURSE-LOCAL ADDITIONS (layout vars, not theme tokens) ============ */
+  /* --readw is a narrower measure for narrative prose; --mono is the single typeface (brutalist). */
+  :root { --readw: 760px; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body { font-size: 16px; line-height: 1.6; text-rendering: optimizeLegibility; }
+  .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+  .mono { font-family: var(--mono); background:var(--bg-soft); border:1px solid var(--line);
+    padding:0 4px; color:var(--dim); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+
+  /* ============ READING PROGRESS BAR ============ */
+  .progress {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: transparent;
+    z-index: 50;
+    pointer-events: none;
+  }
+  .progress > i {
+    display: block;
+    height: 100%;
+    width: 0%;                 /* JS sets width in Task 5 */
+    background: var(--accent);
+    transition: width .08s linear;
+  }
+
+  /* ============ THEME TOGGLE (segmented, brutalist — copied from report-html) ============ */
+  .seg {
+    display: inline-flex;
+    border: 2px solid var(--border);
+    flex: none;
+    background: var(--bg);
+  }
+  .seg button {
+    appearance: none;
+    border: 0;
+    border-left: 2px solid var(--border);
+    background: var(--bg);
+    color: var(--dim);
+    font: inherit;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  .seg button:first-child { border-left: 0; }
+  .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .seg button:hover { background: var(--fg); color: var(--bg); }
+  .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* theme toggle floats top-right, out of the scroll flow */
+  .toggle-dock {
+    position: fixed;
+    top: 16px; right: 16px;
+    z-index: 40;
+  }
+
+  /* ============ SCROLL-REVEAL (states only; .in added by Task 5 JS) ============ */
+  /* graceful degradation: no-JS / pre-JS state is visible; hidden state gated on html.js */
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  html.js .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  html.js .reveal.in {
+    opacity: 1;
+    transform: none;
+    transition: opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html.js .reveal { opacity: 1; transform: none; }
+    html.js .reveal.in { transition: none; }
+  }
+
+  /* ============ HERO ============ */
+  header.hero {
+    min-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: clamp(48px, 9vh, 120px) clamp(20px, 5vw, 64px) clamp(40px, 7vh, 80px);
+  }
+  .hero .kicker {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 22px;
+  }
+  .hero .kicker::before { content: "$ "; color: var(--accent); }
+  .hero h1 {
+    font-family: var(--mono);
+    font-size: clamp(40px, 8vw, 92px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 0.98;
+    margin: 0 0 28px;
+    text-wrap: balance;
+  }
+  .hero .lede {
+    font-family: var(--mono);
+    font-size: clamp(17px, 2.4vw, 22px);
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--dim);
+    max-width: 62ch;
+    margin: 0 0 40px;
+    text-wrap: pretty;
+  }
+  .hero .learn {
+    background: var(--bg-soft);
+    border: 2px solid var(--border);
+    border-radius: 0;
+    padding: 24px 28px;
+    max-width: var(--readw);
+  }
+  .hero .learn .lbl {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin: 0 0 12px;
+  }
+  .hero .learn .lbl::before { content: "› "; color: var(--accent); }
+  .hero .learn p { margin: 0; color: var(--fg); font-size: 16px; line-height: 1.6; }
+  .hero .learn ul { margin: 0; padding-left: 20px; color: var(--fg); }
+  .hero .learn li { margin: 6px 0; line-height: 1.55; }
+  .hero .meta {
+    margin-top: 36px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    align-items: center;
+    color: var(--dim);
+    font-size: 13.5px;
+  }
+  .hero .meta .count { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .hero .meta .dot { margin: 0 10px; color: var(--dim); }
+  .hero .scroll-cue {
+    margin-top: 48px;
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  /* ============ SCENE (one chapter / decision beat) — terminal-brutalist ============ */
+  /* Each scene is a .term box: 2px border, --bg-soft body, inverted .term-bar header
+     (the .beat-label renders AS the bar). border-radius:0, sharp brutalist. */
+  .scene {
+    max-width: var(--maxw);
+    margin: clamp(48px, 9vh, 96px) auto 0;
+    border: 2px solid var(--border);
+    background: var(--bg-soft);
+    /* deep-link landing: keep an anchored scene (course.html#beat-<id>) clear of
+       project-site's injected 52px sticky nav (+ breathing room); harmless standalone */
+    scroll-margin-top: 64px;
+  }
+  /* scene inner padding lives on the children wrapper via direct-child rule */
+  .scene > *:not(.beat-label) {
+    max-width: var(--readw);
+    margin-left: clamp(20px, 5vw, 56px);
+    margin-right: clamp(20px, 5vw, 56px);
+  }
+  .scene > *:not(.beat-label):first-of-type { margin-top: clamp(36px, 6vh, 64px); }
+  .scene > *:last-child { margin-bottom: clamp(40px, 7vh, 72px); }
+
+  /* beat-label: rendered as the inverted terminal bar carrying EPISODE NN · TOPIC.
+     scoped .scene .beat-label so it beats the generic `.scene p { color: var(--fg) }` rule. */
+  .scene .beat-label {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    background: var(--fg);
+    color: var(--bg);
+    padding: 9px clamp(20px, 5vw, 56px);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin: 0 0 4px;
+  }
+  .scene .beat-label::before { content: "EPISODE"; opacity: .7; }
+  .scene .beat-label .nn { color: var(--bg); font-variant-numeric: tabular-nums; }
+  .scene .beat-label .sep { color: var(--bg); opacity: .55; }
+  /* inferred-confidence flag sits in the bar — keep it legible on the dark bar */
+  .scene .beat-label .confidence { margin-left: auto; color: var(--bg); border-color: var(--bg); }
+
+  /* hook: big mono headline, tight letter-spacing */
+  .hook {
+    font-family: var(--mono);
+    font-size: clamp(28px, 5vw, 50px);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+    margin: 0 0 28px;
+    text-wrap: balance;
+    color: var(--fg);
+  }
+  .scene p {
+    font-size: clamp(16px, 1.9vw, 18.5px);
+    line-height: 1.66;
+    color: var(--fg);
+    text-wrap: pretty;
+    margin: 0 0 20px;
+  }
+  .scene p.dim { color: var(--dim); }
+
+  /* trap: tension callout — bordered, left warn-accent, sharp */
+  .trap {
+    border: 2px solid var(--border);
+    border-left: 6px solid var(--warn);
+    background: var(--surface);
+    border-radius: 0;
+    padding: 16px 20px;
+    margin: 0 0 28px;
+  }
+  .trap .lbl {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--warn);
+    display: block;
+    margin: 0 0 8px;
+  }
+  .trap .lbl::before { content: "! "; }
+  .trap p { margin: 0; color: var(--fg); font-size: 16.5px; line-height: 1.55; }
+
+  /* diagram: bordered SVG container, toggleable layers — brutalist */
+  .diagram {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 0;
+    padding: 24px 24px 20px;
+    margin: 0 0 30px;
+  }
+  .diagram svg { display: block; width: 100%; height: auto; }
+  .diagram .layer { transition: opacity .35s ease; }
+  .diagram .layer.hidden { display: none; }       /* hard toggle */
+  .diagram .layer.dim { opacity: 0.18; }           /* soft toggle */
+  .diagram .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+  }
+  /* brutalist toggle: bordered .tag-style button; active = accent fill */
+  .diagram .controls button {
+    appearance: none;
+    font: inherit;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    color: var(--fg);
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 0;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: transform 90ms linear, box-shadow 90ms linear;
+  }
+  .diagram .controls button[aria-pressed="true"] {
+    color: var(--bg);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .diagram .controls button:hover { transform: translate(-2px,-2px); box-shadow: 3px 3px 0 0 var(--border); }
+  .diagram .controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .diagram .cap {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--dim);
+    line-height: 1.5;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .diagram .controls button:hover { transform: none; box-shadow: none; }
+  }
+
+  /* reveal-decision: the "decision" block — bordered callout, accent */
+  .reveal-decision {
+    border: 2px solid var(--accent);
+    background: var(--surface);
+    border-radius: 0;
+    padding: 16px 20px;
+    margin: 0 0 26px;
+  }
+  .reveal-decision .lbl {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin: 0 0 10px;
+  }
+  .reveal-decision .lbl::before { content: "› "; }
+  .reveal-decision .choice {
+    font-family: var(--mono);
+    font-size: clamp(19px, 2.6vw, 26px);
+    font-weight: 700;
+    letter-spacing: -0.018em;
+    line-height: 1.25;
+    color: var(--fg);
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  /* road: collapsible "road not taken" — brutalist sharp bordered <details>/<summary> */
+  .road {
+    border: 2px solid var(--border);
+    border-radius: 0;
+    background: var(--surface);
+    margin: 0 0 28px;
+    overflow: hidden;
+  }
+  .road > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 14px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .road > summary::-webkit-details-marker { display: none; }
+  .road > summary:hover { background: var(--bg-soft); color: var(--fg); }
+  .road > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .road > summary::before {
+    content: "[+]";
+    display: inline-block;
+    color: var(--accent);
+    font-size: 13px;
+    line-height: 1;
+    font-weight: 700;
+  }
+  .road[open] > summary { border-bottom: 2px solid var(--border); color: var(--fg); }
+  .road[open] > summary::before { content: "[-]"; }
+  .road .body {
+    padding: 16px 18px;
+    color: var(--dim);
+    font-size: 15.5px;
+    line-height: 1.6;
+  }
+  .road .body p { margin: 0; font-size: inherit; color: inherit; }
+
+  /* evidence: mono, --dim; paths shown as inline-code .mono chips */
+  .evidence {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .evidence .lbl {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin: 0 0 4px;
+  }
+  .evidence .path {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--dim);
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    padding: 2px 6px;
+    align-self: flex-start;
+    max-width: 100%;
+    direction: rtl;          /* left-truncation: keep the filename, drop the prefix */
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* chips inside a scene: scene body is --bg-soft, so chips need --surface to read as chips */
+  .scene .mono, .scene .evidence .path { background: var(--surface); }
+
+  /* confidence flag (documented | inferred) — brutalist .tag */
+  .confidence {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    border: 2px solid var(--border);
+    border-radius: 0;
+    padding: 2px 8px;
+    vertical-align: middle;
+  }
+  .confidence.inferred { color: var(--warn); border-color: var(--warn); }
+
+  /* ============ CLOSING — terminal-brutalist ============ */
+  footer.closing {
+    max-width: var(--maxw);
+    margin: clamp(48px, 9vh, 96px) auto 0;
+    padding: clamp(56px, 11vh, 120px) clamp(20px, 5vw, 64px) clamp(64px, 10vh, 120px);
+    border-top: 2px solid var(--border);
+  }
+  footer.closing .kicker {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 22px;
+  }
+  footer.closing .kicker::before { content: "$ "; color: var(--accent); }
+  footer.closing .synthesis {
+    font-family: var(--mono);
+    font-size: clamp(22px, 3.4vw, 32px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.36;
+    color: var(--fg);
+    max-width: 64ch;
+    margin: 0 0 56px;
+    text-wrap: pretty;
+  }
+  footer.closing .block-lbl {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin: 0 0 16px;
+  }
+  footer.closing .block-lbl::before { content: "› "; color: var(--accent); }
+  .not-done {
+    list-style: none;
+    margin: 0 0 56px;
+    padding: 0;
+    max-width: var(--readw);
+  }
+  .not-done li {
+    padding: 16px 0;
+    border-top: 1px dashed var(--line);
+    color: var(--dim);
+    font-size: 15.5px;
+    line-height: 1.55;
+  }
+  .not-done li:first-child { border-top: 0; }
+  .not-done li b { color: var(--fg); font-weight: 700; }
+  .closing-evidence {
+    list-style: none;
+    margin: 0 0 48px;
+    padding: 0;
+    max-width: var(--readw);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .closing-evidence .path {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--dim);
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    padding: 2px 6px;
+    align-self: flex-start;
+    max-width: 100%;
+    direction: rtl;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  footer.closing .signoff {
+    padding-top: 26px;
+    border-top: 2px solid var(--border);
+    color: var(--dim);
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 680px) {
+    body { font-size: 15px; }
+    header.hero, footer.closing { padding-left: 20px; padding-right: 20px; }
+    .toggle-dock { top: 10px; right: 10px; }
+  }
+</style>
+</head>
+<body>
+<style class="site-nav-css">
+  .site-nav{display:flex;align-items:center;border-bottom:2px solid var(--border);position:sticky;top:0;z-index:50;background:var(--bg);flex-wrap:wrap;}
+  .site-nav .brand{padding:14px 16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:38vw;}
+  .site-nav a{padding:14px 16px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;border-left:2px solid var(--border);}
+  .site-nav a:hover,.site-nav a[aria-current="page"]{background:var(--fg);color:var(--bg);}
+  @media (max-width:680px){.site-nav .brand{max-width:28vw;}}
+</style>
+<nav class="site-nav" aria-label="Project site">
+  <span class="brand">duels</span>
+  <a href="index.html" data-page="overview">Overview</a>
+  <a href="report.html" data-page="data">Data</a>
+  <a href="course.html" data-page="course" aria-current="page">Course</a></nav>
+<style class="site-nav-overrides">
+  .progress{top:50px;z-index:50;}
+  .site-nav{padding-right:104px;}
+  .toggle-dock{top:8px;right:16px;z-index:60;}
+  @media (max-width:680px){.toggle-dock{top:8px;right:12px;}}
+</style>
+
+<!-- reading progress bar (width driven by Task 5 JS) -->
+<div class="progress" aria-hidden="true"><i></i></div>
+
+<!-- floating theme toggle -->
+<div class="toggle-dock">
+  <div class="seg" role="group" aria-label="Color theme">
+    <button id="t-light" aria-pressed="true">Light</button>
+    <button id="t-dark" aria-pressed="false">Dark</button>
+  </div>
+</div>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <p class="kicker">Build Masterclass</p>
+  <h1>duels</h1>
+  <p class="lede">How one developer made a 1v1 quiz platform fast, cheat-resistant, and portable on a managed edge stack, decision by decision.</p>
+  <div class="learn">
+    <p class="lbl">What you'll learn</p>
+    <ul><li>Why a game <em>platform</em> defines its game contract before the second game exists</li><li>How to get sub-100 ms realtime without owning a server, and keep the exit cheap</li><li>Why identity starts anonymous and upgrades only when there is something worth saving</li><li>How to score a public leaderboard you cannot trust the client to compute</li><li>How to put a live counter on your busiest page without it becoming the bottleneck</li></ul>
+  </div>
+  <p class="meta">
+    <span class="count num">10</span><span>&nbsp;chapters</span>
+  </p>
+  <p class="scroll-cue">Scroll to begin ↓</p>
+</header>
+
+<!--
+  scene pattern — one chapter = one Decision Beat (the chapters_html slot below is filled with these).
+  Order of beats inside a scene: hook (problem) → trap → (diagram) → reveal (choice) → why → road_not_taken → evidence.
+  Illustrative slots below use ‹angle brackets› on purpose — the real fill uses double-brace tokens, so a
+  correctly-filled course has ZERO double-brace tokens left (this comment must not collide with that grep gate).
+  Each .scene is a terminal-brutalist .term box (2px border, --bg-soft body); the .beat-label
+  renders AS the inverted .term-bar header — CSS prepends "EPISODE", so <span class="nn">01</span>
+  yields "EPISODE 01 · TENANT ISOLATION". Keep beat labels in ENGLISH.
+  Reference structure:
+  <section class="scene">
+    <p class="beat-label reveal"><span class="nn">01</span><span class="sep">·</span><span>Tenant isolation</span></p>
+    <h2 class="hook reveal">‹hook headline / problem›</h2>
+    <p class="dim reveal">‹problem prose — the stakes›</p>
+    <div class="trap reveal"><span class="lbl">The trap</span><p>‹trap›</p></div>
+    <div class="diagram reveal">
+      <svg viewBox="0 0 600 200" role="img" aria-label="...">
+        <g class="layer" data-layer="0">… layer markup …</g>
+        <g class="layer" data-layer="1">… layer markup …</g>
+      </svg>
+      <div class="controls"><button aria-pressed="true" data-toggle="0">Service-layer guards</button><button aria-pressed="true" data-toggle="1">Postgres RLS</button></div>
+      <p class="cap">‹diagram caption›</p>
+    </div>
+    <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">‹choice›</p></div>
+    <p class="reveal">‹why — grounded in evidence›</p>
+    <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>‹road_not_taken›</p></div></details>
+    <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">plans/02-auth-tenancy.md</li></ul>
+  </section>
+-->
+
+<!-- ============ CHAPTERS (generated .scene blocks) ============ -->
+<section class="scene" id="beat-game-module-boundary">
+    <p class="beat-label reveal"><span class="nn">01</span><span class="sep">·</span><span>The game-module boundary</span></p>
+    <h2 class="hook reveal">You are building one game today and a second one is already on the roadmap.</h2>
+    <p class="dim reveal">If game two means a rewrite, the roadmap is a lie.</p>
+    <div class="trap reveal"><span class="lbl">The trap</span><p>Ship the first game fast, hard-code its rules into the match loop, and promise to &#x27;extract an interface later&#x27;. Later never has time, and by then the lobby, the scoring, the reveal flow all assume two numbers being compared.</p></div>
+    <div class="diagram reveal"><svg viewBox="0 0 600 290" role="img" aria-label="The game-module boundary — defense layers"><g class="layer" data-layer="0"><rect x="20" y="20" width="560" height="70" rx="0" fill="var(--accent)" stroke="var(--border)" stroke-width="2"/><text x="40" y="62" fill="var(--bg)">Platform: lobby + match + scoring</text></g><g class="layer" data-layer="1"><rect x="20" y="110" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="152" fill="var(--fg)">GameModule contract (registry)</text></g><g class="layer" data-layer="2"><rect x="20" y="200" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="242" fill="var(--fg)">higher-or-lower / multi-choice</text></g></svg>
+      <div class="controls"><button aria-pressed="true" data-toggle="0">Platform: lobby + match + scoring</button><button aria-pressed="true" data-toggle="1">GameModule contract (registry)</button><button aria-pressed="true" data-toggle="2">higher-or-lower / multi-choice</button></div>
+      <p class="cap">Toggle each layer to see what the system relies on when the other is gone.</p>
+    </div>
+    <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">A single GameModule contract that every game implements; the platform talks only to the interface, never to a specific game.</p></div>
+    <p class="reveal">The platform code (lobby, match orchestration, scoring shell, anti-cheat) never imports higher-or-lower directly. It calls gameModuleForCategory(category), which switches on category.gameType and returns the right module. When multi-choice arrived months later it slotted in as a second case in that switch, and the three existing categories kept working by adding one gameType field. The abstraction paid for itself the first time it was used, not the day it was written.</p>
+    <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Discovering the boundary later, after game two: the spec is explicit that the interface was designed up front because the whole point of the platform was that game two lands as a module, not a rewrite. Waiting would have meant unwinding higher-or-lower assumptions out of the lobby and scoring at the worst possible time.</p></div></details>
+    <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">packages/game-engine/src/game-module-registry.ts</li><li class="path">packages/game-engine/src/types.ts</li><li class="path">docs/superpowers/specs/2026-04-26-duels-platform-and-game1-design.md</li><li class="path">docs/superpowers/specs/2026-05-04-multi-choice-game-mode-design.md</li></ul>
+  </section>
+
+  <section class="scene" id="beat-realtime-on-durable-objects">
+    <p class="beat-label reveal"><span class="nn">02</span><span class="sep">·</span><span>Realtime without a server to run</span></p>
+    <h2 class="hook reveal">Two strangers race to answer the same question.</h2>
+    <p class="dim reveal">The &#x27;opponent answered&#x27; ping has to land in under 100 ms, and you are one person with no ops budget.</p>
+    <div class="trap reveal"><span class="lbl">The trap</span><p>Stand up a Node WebSocket server with Socket.io and Redis for shared state. Now you own a process that can crash, a Redis you have to scale, sticky sessions for the socket layer, and a pager that goes off at 2 a.m., all to move a few 50-byte messages.</p></div>
+    <div class="diagram reveal"><svg viewBox="0 0 600 290" role="img" aria-label="Realtime without a server to run — defense layers"><g class="layer" data-layer="0"><rect x="20" y="20" width="560" height="70" rx="0" fill="var(--accent)" stroke="var(--border)" stroke-width="2"/><text x="40" y="62" fill="var(--bg)">Lobby DO (FIFO queue)</text></g><g class="layer" data-layer="1"><rect x="20" y="110" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="152" fill="var(--fg)">Match DO (one per match, in-memory state)</text></g><g class="layer" data-layer="2"><rect x="20" y="200" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="242" fill="var(--fg)">D1 (session boundaries only)</text></g></svg>
+      <div class="controls"><button aria-pressed="true" data-toggle="0">Lobby DO (FIFO queue)</button><button aria-pressed="true" data-toggle="1">Match DO (one per match, in-memory state)</button><button aria-pressed="true" data-toggle="2">D1 (session boundaries only)</button></div>
+      <p class="cap">Toggle each layer to see what the system relies on when the other is gone.</p>
+    </div>
+    <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">One Durable Object per match, one Lobby DO for the queue, running at the Warsaw edge via PartyKit, with native WebSocket and no message protocol on top.</p></div>
+    <p class="reveal">Each match is its own stateful object holding the game in memory, so there is no global lock and no shared cache to keep consistent. State lives where the match lives. D1 is touched only at session boundaries (login, match start, match end), never on the per-message hot path, so the thing that has to be fast (the ping) never waits on a database. Native WebSocket instead of Socket.io drops the protocol overhead the spec called out as pure cost for 50-byte payloads.</p>
+    <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Socket.io + Redis on a Hetzner box. The spec keeps it as the documented migration target for &gt;10k DAU and estimates roughly a week of work, precisely because the transport layer was kept thin and isolated from day one. It is the fallback, not the start.</p></div></details>
+    <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">packages/partykit-server/src/match/match-room.ts</li><li class="path">packages/partykit-server/src/lobby/lobby-room.ts</li><li class="path">packages/partykit-server/src/server.ts</li><li class="path">docs/superpowers/specs/2026-04-26-duels-platform-and-game1-design.md</li></ul>
+  </section>
+
+  <section class="scene" id="beat-thin-transport-escape-hatch">
+    <p class="beat-label reveal"><span class="nn">03</span><span class="sep">·</span><span>Keeping the exit unlocked</span></p>
+    <h2 class="hook reveal">You picked a managed platform to move fast.</h2>
+    <p class="dim reveal">The fear that follows every such choice: the day the bill or the limits force you off it, you are trapped.</p>
+    <div class="trap reveal"><span class="lbl">The trap</span><p>Let Cloudflare-specific APIs leak into the game rules and the schema. Durable Object handles in the scoring code, D1 quirks in the queries, and &#x27;portable&#x27; becomes a word in the README that no longer matches the code.</p></div>
+    <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">Game logic is pure TypeScript with zero Cloudflare imports; the transport layer is kept deliberately thin so it can be swapped without touching the rules.</p></div>
+    <p class="reveal">The game engine runs in a Worker, a browser, and a Node test unchanged, because it depends on no platform API. The registry comment makes &#x27;keep it pure and sync so it runs in any environment&#x27; an explicit rule. That same purity is what lets the same scoring code replay a run on the server to catch cheaters. The migration plan reads as &#x27;replace PartyKit transport, keep everything else&#x27; and budgets about a week, which is only credible because the expensive parts never learned they were on Cloudflare.</p>
+    <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Full Cloudflare optimization with DO handles threaded through the game code. Faster to write on day one, but it converts the documented one-week migration into a rewrite, the spec treats the thin, isolated transport as the price of keeping that exit cheap.</p></div></details>
+    <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">packages/game-engine/src/game-module-registry.ts</li><li class="path">packages/game-engine/src/higher-or-lower.ts</li><li class="path">docs/superpowers/specs/2026-04-26-duels-platform-and-game1-design.md</li></ul>
+  </section>
+
+  <section class="scene" id="beat-anonymous-first-auth">
+    <p class="beat-label reveal"><span class="nn">04</span><span class="sep">·</span><span>Anonymous-first identity</span></p>
+    <h2 class="hook reveal">The whole product promise is &#x27;type a nick and play in three seconds&#x27;.</h2>
+    <p class="dim reveal">But everything that matters (rating, streaks, leaderboard rank) lives in localStorage, and one cache clear wipes a player&#x27;s entire history.</p>
+    <div class="trap reveal"><span class="lbl">The trap</span><p>Put a login wall in front of play to make identity durable. You protect the rating and lose the player, because the three-second promise is the product. Or skip accounts entirely and watch retention leak out through every cleared cache and every new phone.</p></div>
+    <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">Better Auth creates a real anonymous account on first connection; the player still just types a nick, but identity now lives server-side and can be upgraded later without ever blocking play.</p></div>
+    <p class="reveal">An anonymous user is a first-class server account from the first touch, so the session cookie, not localStorage, owns identity, and it survives a cache clear or a device switch. The nick-and-play flow is untouched because account creation happens silently on connection. Upgrading to a passkey, Google, or magic-link is offered only after the player has something worth saving (a first win, a top-50 rank), so the cost of signing in is paid exactly when the value is visible, never before.</p>
+    <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>A login wall, rejected because it trades the three-second first-touch, the core of the product, for durability. The spec frames localStorage-only identity as the dominant churn risk for a product that wants 12-month retention, so doing nothing was not on the table either.</p></div></details>
+    <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">apps/web/src/lib/server/auth.ts</li><li class="path">docs/superpowers/specs/2026-05-01-account-system-design.md</li></ul>
+  </section>
+
+  <section class="scene" id="beat-session-jwt-bridge">
+    <p class="beat-label reveal"><span class="nn">05</span><span class="sep">·</span><span>Bridging the cookie to the edge</span></p>
+    <h2 class="hook reveal">Identity lives in a session cookie on your domain.</h2>
+    <p class="dim reveal">The realtime game lives on a different origin entirely, *.partykit.dev, where that cookie does not exist.</p>
+    <div class="trap reveal"><span class="lbl">The trap</span><p>Reach for the easy fix and let the realtime endpoint mint a token from whatever nick the request body claims. Now anyone can ask for a token under any name, with no session behind it, and the &#x27;identity&#x27; the whole match system trusts is just a string a stranger typed.</p></div>
+    <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">A SvelteKit endpoint reads the verified Better Auth session and mints a short-lived HS256 JWT whose subject is the stable user id; PartyKit only ever trusts that signed token.</p></div>
+    <p class="reveal">The cookie cannot cross to *.partykit.dev, so the bridge is a stateless token the edge can verify on its own with no callback to the web app. Crucially the JWT subject is the stable Better Auth user id, not a fresh value per call, so leaderboard nick-hashes, lobby pairing keys, and match-room slots all stay bound to the same identity across sessions and devices. The earlier path, where the lobby minted tokens straight from a request body with no session check, was flagged in the security audit precisely because the subject was random and the nick was unverified; moving the mint behind the session closes that.</p>
+    <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Sharing the session cookie across origins, impossible for *.partykit.dev, or keeping the old body-supplied token mint, which the audit shows lets any web page mint a player token from a victim&#x27;s rate-limit budget. The bridge exists so all the existing PartyKit verification code stays unchanged and only the token issuer moves.</p></div></details>
+    <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">apps/web/src/lib/server/partykit-token.ts</li><li class="path">apps/web/src/routes/api/partykit-token/+server.ts</li><li class="path">packages/partykit-server/src/auth/jwt.ts</li><li class="path">docs/superpowers/specs/2026-05-01-account-system-design.md</li><li class="path">.security-audit/report.md</li></ul>
+  </section>
+
+  <section class="scene" id="beat-anon-to-real-merge">
+    <p class="beat-label reveal"><span class="nn">06</span><span class="sep">·</span><span>Carrying progress across the upgrade</span></p>
+    <h2 class="hook reveal">A player has been grinding as a guest, a rating, a streak, leaderboard entries.</h2>
+    <p class="dim reveal">The moment they finally register a passkey, all of that is owned by an anonymous account that is about to disappear.</p>
+    <div class="trap reveal"><span class="lbl">The trap</span><p>Treat the upgrade as a fresh start: the new account is empty, the guest&#x27;s rating and history evaporate. The player did exactly what you asked, committed to the product, and you punished them for it with a wiped profile.</p></div>
+    <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">On upgrade, re-parent every game-state row from the anonymous user onto the real one inside Better Auth&#x27;s onLinkAccount hook, then delete the anonymous shell.</p></div>
+    <p class="reveal">Counters are summed, solo bests are merged per bucket keeping the better entry, and matches are re-pointed, so the player keeps everything they earned. But the Glicko rating deliberately keeps the real user&#x27;s value rather than importing the anonymous one, because anonymous ratings are noisy and re-importing them would punish people the moment they upgrade. The current streak resets at the anon-to-real boundary on purpose: the next match&#x27;s identity is genuinely a different user, so pretending the streak continued would be a lie the data shouldn&#x27;t tell.</p>
+    <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Re-importing the anonymous rating verbatim, rejected in the merge code&#x27;s own comment because noisy guest ratings would drag down a careful player right as they commit. A clean fresh start was rejected for the opposite reason, it makes upgrading feel like a loss, killing the conversion the whole anonymous-first design exists to earn.</p></div></details>
+    <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">apps/web/src/lib/server/account-link.ts</li><li class="path">docs/superpowers/specs/2026-05-01-account-system-design.md</li></ul>
+  </section>
+
+  <section class="scene" id="beat-server-replay-scoring">
+    <p class="beat-label reveal"><span class="nn">07</span><span class="sep">·</span><span>Replaying the run to score it</span></p>
+    <h2 class="hook reveal">Your solo leaderboard is public and global.</h2>
+    <p class="dim reveal">The client knows the questions, the answers, and its own score. Whatever number it sends, you are about to rank the whole world by it.</p>
+    <div class="trap reveal"><span class="lbl">The trap</span><p>Trust the client&#x27;s reported score. It is the obvious move, the browser already computed it. And it works perfectly until the first person opens the network tab, posts correctCount: 1000, and parks themselves at the top of every board forever.</p></div>
+    <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">The client submits its seed and answers; the server replays the entire run with the same deterministic engine and scores it from scratch, the client&#x27;s tally is never trusted.</p></div>
+    <p class="reveal">Because the game engine is pure and deterministic, the server can re-run the exact same rounds from the same seed and arrive at the only score it will accept. The client&#x27;s number is treated as a claim to be verified, not a result to be stored. Two cheap sanity floors back it up: a 1500 ms-per-round minimum that lets fast humans through but flags scripted replays, and a single-use run token persisted to DO storage so an eviction can&#x27;t be used to redeem the same run twice. The security audit confirmed this path holds, spamming the board still requires actually playing a correct game.</p>
+    <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Trusting the client tally, rejected because it makes the leaderboard meaningless the day someone reads the docs. Running the full game server-side per player was unnecessary: replay gets the same guarantee at session boundaries only, keeping the per-message path free of the database.</p></div></details>
+    <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">packages/partykit-server/src/solo-leaderboard/solo-leaderboard-room.ts</li><li class="path">packages/game-engine/src/solo-replay.ts</li><li class="path">.security-audit/report.md</li></ul>
+  </section>
+
+  <section class="scene" id="beat-fail-fast-secret-guard">
+    <p class="beat-label reveal"><span class="nn">08</span><span class="sep">·</span><span>Failing loud on a weak secret</span></p>
+    <h2 class="hook reveal">Every JWT that binds a player to a match is only as strong as one secret.</h2>
+    <p class="dim reveal">Set it to a short dev placeholder by accident, and every token in the system is forgeable. Silently. With everything still appearing to work.</p>
+    <div class="trap reveal"><span class="lbl">The trap</span><p>Check only that the secret exists. A one-byte &#x27;x&#x27; passes. A copy-pasted dev placeholder passes. The app boots green, signs tokens with a key an attacker can guess, and nothing tells you until someone forges their way into a match.</p></div>
+    <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">getSecret enforces a 32-character minimum and a blacklist of known leaked dev placeholders, throwing at startup rather than booting with a weak key.</p></div>
+    <p class="reveal">A missing secret is an obvious failure; a weak one is the dangerous case because everything keeps working while every token is forgeable. So the guard rejects both short keys and the specific placeholders that have leaked before, and it throws loudly instead of degrading quietly. A misconfigured deploy fails to start, which is the only safe failure mode for a signing key. The same discipline was later mirrored into the web app&#x27;s Better Auth secret check, so neither half of the system can boot on a guessable key.</p>
+    <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>A bare non-empty check, the default most projects ship, rejected because it lets a three-byte secret through, which is functionally no protection. Trusting the environment to always be set correctly was rejected too: the README documents that an older build leaked a placeholder, so the blacklist exists because the failure already happened once.</p></div></details>
+    <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">packages/partykit-server/src/auth/secret.ts</li><li class="path">apps/web/src/lib/server/auth.ts</li><li class="path">README.md</li></ul>
+  </section>
+
+  <section class="scene" id="beat-hub-spoke-counter">
+    <p class="beat-label reveal"><span class="nn">09</span><span class="sep">·</span><span>A live counter without a bottleneck</span></p>
+    <h2 class="hook reveal">The homepage needs to show &#x27;players dueling now&#x27; to prove the place is alive.</h2>
+    <p class="dim reveal">Every visitor wants that number, and at viral peak that is a lot of reads hitting one shared piece of state.</p>
+    <div class="trap reveal"><span class="lbl">The trap</span><p>Point every homepage load at the single object that holds the count. Durable Objects are single-threaded per id, so one global counter read by every visitor becomes the exact bottleneck you built the edge to avoid: the busiest page in the product, funneled through one lock.</p></div>
+    <div class="diagram reveal"><svg viewBox="0 0 600 290" role="img" aria-label="A live counter without a bottleneck — defense layers"><g class="layer" data-layer="0"><rect x="20" y="20" width="560" height="70" rx="0" fill="var(--accent)" stroke="var(--border)" stroke-width="2"/><text x="40" y="62" fill="var(--bg)">Homepage read (Cache API, 5s TTL)</text></g><g class="layer" data-layer="1"><rect x="20" y="110" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="152" fill="var(--fg)">Presence counter DO (global)</text></g><g class="layer" data-layer="2"><rect x="20" y="200" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="242" fill="var(--fg)">Lobby + Match DOs (HMAC writes)</text></g></svg>
+      <div class="controls"><button aria-pressed="true" data-toggle="0">Homepage read (Cache API, 5s TTL)</button><button aria-pressed="true" data-toggle="1">Presence counter DO (global)</button><button aria-pressed="true" data-toggle="2">Lobby + Match DOs (HMAC writes)</button></div>
+      <p class="cap">Toggle each layer to see what the system relies on when the other is gone.</p>
+    </div>
+    <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">Lobby and match objects push state changes into one Presence counter DO; the homepage reads a cached endpoint, so the counter sees writes but almost no reads.</p></div>
+    <p class="reveal">The counter only ever sees writes it cannot avoid, a lobby heartbeat at about one per second and match start/end events, which stays far under the per-object request ceiling. Reads are absorbed by the Cache API at roughly one counter hit every five seconds no matter how many people are on the page, so a million viewers and ten viewers cost the counter the same. Staleness is handled honestly: a heartbeat older than thirty seconds is treated as zero in case the lobby hibernated, and a DO alarm sweeps match entries that a crash left behind.</p>
+    <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Pushing the count to the homepage over WebSocket, the spec rejects it as a different complexity tier and notes polling is enough for a number that changes slowly. Letting every visitor read the DO directly is the trap itself: it recreates the singleton bottleneck the edge architecture was chosen to escape.</p></div></details>
+    <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">packages/partykit-server/src/presence/presence-room.ts</li><li class="path">apps/web/src/routes/api/live-stats/dueling-now/+server.ts</li><li class="path">apps/web/src/routes/api/live-stats/snapshot/+server.ts</li><li class="path">docs/superpowers/specs/2026-05-06-live-homepage-stats-design.md</li></ul>
+  </section>
+
+  <section class="scene" id="beat-internal-hmac">
+    <p class="beat-label reveal"><span class="nn">10</span><span class="sep">·</span><span>Signing the calls between your own services</span></p>
+    <h2 class="hook reveal">Your match objects and your web app are separate services on separate origins that have to talk, to push counts, to persist results.</h2>
+    <p class="dim reveal">The counter has a public address. Anyone can POST to it.</p>
+    <div class="trap reveal"><span class="lbl">The trap</span><p>Assume that because these are &#x27;internal&#x27; calls, they are safe. But there is no network boundary at the edge. The counter endpoint is reachable from the open internet, so an unsigned &#x27;internal&#x27; POST is just an open write endpoint waiting to be flooded with fake match-start events.</p></div>
+    <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">Every service-to-service call carries an HMAC-SHA256 signature over a timestamp plus the body; the receiver recomputes it in constant time and rejects anything stale or unsigned.</p></div>
+    <p class="reveal">There is no private network between these Workers, so trust has to travel in the request itself, not in where it came from. The signature covers the body so it can&#x27;t be tampered with, and it covers a timestamp rejected beyond a thirty-second skew so a captured request can&#x27;t be replayed later. The comparison is constant-time to avoid leaking the signature byte by byte through timing. If the shared secret is ever missing, presence calls are skipped rather than sent unsigned, matches keep working, the count just freezes, which is the safe direction to fail.</p>
+    <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Trusting internal calls implicitly was rejected because at the edge there is no &#x27;internal&#x27;; the endpoint is on the public internet. IP-allowlisting was not viable either, since edge Workers don&#x27;t present stable origin IPs to each other the way boxes on a VPC would.</p></div></details>
+    <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">packages/partykit-server/src/util/internal-hmac.ts</li><li class="path">packages/partykit-server/src/presence/presence-room.ts</li><li class="path">docs/superpowers/specs/2026-05-06-live-homepage-stats-design.md</li></ul>
+  </section>
+
+<!-- ============ CLOSING ============ -->
+<footer class="closing">
+  <p class="kicker">The pattern</p>
+  <p class="synthesis">The same instinct runs through all ten decisions: decide for the second thing while you still only have the first. The game contract was written before game two. The transport stayed thin before any migration. Identity started anonymous so it could become real later. The leaderboard distrusted the client before a cheater showed up, and the live counter dodged its bottleneck before the traffic arrived. None of these were the fastest move on day one. Each kept day one hundred cheap.</p>
+
+  <p class="block-lbl">Deliberately not done — and why</p>
+  <ul class="not-done">
+    <li><b>ELO / leagues / seasons</b> — the rating math (openskill) is already wired in, but ranked ladders and seasons are explicitly post-MVP; the schema carries the hooks so it lands as data, not a rewrite.</li>
+    <li><b>Nationality + per-quiz skill scores</b> — a real, documented subsystem, but its core idea (knowledge-XP is orthogonal to 1v1 ELO) is a variation on the platform and identity themes already taught, so it was folded into the pattern rather than given its own scene.</li>
+    <li><b>Friend-invite single-use guard</b> — appears in the security audit as a recommended fix, not a shipped decision, so it was left out to avoid teaching a choice the code has not actually made.</li>
+    <li><b>Real avatars, audio assets, daily challenge, PWA install</b> — all on the post-MVP backlog; out of scope for an MVP whose first job was to prove the loop is fun and fast.</li>
+  </ul>
+
+  <p class="block-lbl">Sources</p>
+  <ul class="closing-evidence">
+    <li class="path">packages/game-engine/src/game-module-registry.ts</li>
+    <li class="path">packages/game-engine/src/types.ts</li>
+    <li class="path">docs/superpowers/specs/2026-04-26-duels-platform-and-game1-design.md</li>
+    <li class="path">docs/superpowers/specs/2026-05-04-multi-choice-game-mode-design.md</li>
+    <li class="path">packages/partykit-server/src/match/match-room.ts</li>
+    <li class="path">packages/partykit-server/src/lobby/lobby-room.ts</li>
+    <li class="path">packages/partykit-server/src/server.ts</li>
+    <li class="path">packages/game-engine/src/higher-or-lower.ts</li>
+    <li class="path">apps/web/src/lib/server/auth.ts</li>
+    <li class="path">docs/superpowers/specs/2026-05-01-account-system-design.md</li>
+    <li class="path">apps/web/src/lib/server/partykit-token.ts</li>
+    <li class="path">apps/web/src/routes/api/partykit-token/+server.ts</li>
+    <li class="path">packages/partykit-server/src/auth/jwt.ts</li>
+    <li class="path">.security-audit/report.md</li>
+    <li class="path">apps/web/src/lib/server/account-link.ts</li>
+    <li class="path">packages/partykit-server/src/solo-leaderboard/solo-leaderboard-room.ts</li>
+    <li class="path">packages/game-engine/src/solo-replay.ts</li>
+    <li class="path">packages/partykit-server/src/auth/secret.ts</li>
+    <li class="path">README.md</li>
+    <li class="path">packages/partykit-server/src/presence/presence-room.ts</li>
+    <li class="path">apps/web/src/routes/api/live-stats/dueling-now/+server.ts</li>
+    <li class="path">apps/web/src/routes/api/live-stats/snapshot/+server.ts</li>
+    <li class="path">docs/superpowers/specs/2026-05-06-live-homepage-stats-design.md</li>
+    <li class="path">packages/partykit-server/src/util/internal-hmac.ts</li>
+  </ul>
+
+  <p class="signoff num">Generated 2026-05-30 12:32 CEST · v1.0.0</p>
+</footer>
+
+<script>
+  /* Theme toggle (vanilla, persisted). No transition on body — avoids the Chromium var() freeze bug. */
+  (function () {
+    var root = document.documentElement;
+    var bd = document.getElementById('t-dark');
+    var bl = document.getElementById('t-light');
+    var KEY = 'mc-theme';
+
+    function apply(theme) {
+      root.setAttribute('data-theme', theme);
+      var dark = theme === 'dark';
+      bd.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      bl.setAttribute('aria-pressed', dark ? 'false' : 'true');
+      try { localStorage.setItem(KEY, theme); } catch (e) {}
+    }
+
+    try {
+      var saved = localStorage.getItem(KEY);
+      if (saved === 'light' || saved === 'dark') apply(saved);
+    } catch (e) {}
+
+    bd.addEventListener('click', function () { apply('dark'); });
+    bl.addEventListener('click', function () { apply('light'); });
+  })();
+</script>
+
+<script>
+  /* Scroll-reveal (.reveal → .in once on enter) + reading-progress width.
+     html.js gates the hidden state, so no-JS / pre-JS keeps everything visible. */
+  (function () {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+    var bar = document.querySelector('.progress > i');
+    if (bar) addEventListener('scroll', function () {
+      var h = document.documentElement; var p = h.scrollTop / (h.scrollHeight - h.clientHeight || 1);
+      bar.style.width = (p * 100).toFixed(1) + '%';
+    }, { passive: true });
+  })();
+</script>
+
+<script>
+  /* Diagram layer toggle (explorable). Each .diagram .controls button carries
+     data-toggle="N" → flips .hidden on the matching layer [data-layer="N"] and
+     syncs its own aria-pressed. Vanilla, no deps; scoped per-diagram. */
+  (function () {
+    document.querySelectorAll('.diagram .controls button[data-toggle]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var diagram = btn.closest('.diagram');
+        if (!diagram) return;
+        var layer = diagram.querySelector('[data-layer="' + btn.getAttribute('data-toggle') + '"]');
+        if (!layer) return;
+        var on = !layer.classList.toggle('hidden');   // toggle returns true when class now present
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    });
+  })();
+</script>
+</body>
+</html>

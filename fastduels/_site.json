@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-05-30T14:09:00+02:00",
+  "skill_version": "v1.0.0",
+  "project": "duels",
+  "inputs": {
+    "project_data": "reused",
+    "masterclass": "reused",
+    "security": "verified-in-code"
+  },
+  "overview_sources": {
+    "idea": ".project-data/_raw.json:ai_generated.summary",
+    "stack_main": ".project-data/_raw.json:code.stack.main",
+    "why_stack": ".masterclass/_course.json:beats",
+    "value_points": ".project-data/_raw.json:ai_generated.features"
+  },
+  "deep_links": [
+    {
+      "beat_id": "realtime-on-durable-objects",
+      "href": "course.html#beat-realtime-on-durable-objects"
+    },
+    {
+      "beat_id": "anonymous-first-auth",
+      "href": "course.html#beat-anonymous-first-auth"
+    },
+    {
+      "beat_id": "thin-transport-escape-hatch",
+      "href": "course.html#beat-thin-transport-escape-hatch"
+    },
+    {
+      "beat_id": "server-replay-scoring",
+      "href": "course.html#beat-server-replay-scoring"
+    },
+    {
+      "beat_id": "game-module-boundary",
+      "href": "course.html#beat-game-module-boundary"
+    }
+  ],
+  "security": {
+    "source": "verified-in-code",
+    "verified_total": 12,
+    "fixed": 4,
+    "partial": 4,
+    "open": 4,
+    "cannot_verify": 0,
+    "non_issues": 33,
+    "rejected": 6,
+    "no_security_audit": false,
+    "remediation_unverified": false,
+    "open_findings_redacted": true
+  },
+  "flags": {
+    "thin_project": false,
+    "no_spec": false,
+    "empty_stack": false
+  }
+}
