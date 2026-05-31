@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>codehelm · overview</title>
+<script>document.documentElement.classList.add('js')</script>
+<style>
+  /* ============ CANONICAL THEME BLOCK (source of truth) ============ */
+  :root {
+    --bg:#F5F0E8; --bg-soft:#EFE8D7; --surface:#FFFFFF; --fg:#0A0A0A;
+    --border:#000000; --line:rgba(0,0,0,.16); --dim:#5C5648;
+    --accent:#1A7A1A; --warn:#D97706;
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+    --maxw:1100px;
+    --c1:#1A7A1A; --c2:#0E6BA8; --c3:#B8336A; --c4:#D97706; --c5:#5E548E; --c6:#5C5648;
+  }
+  html[data-theme="dark"]{
+    --bg:#0B0B0B; --bg-soft:#141414; --surface:#161616; --fg:#EDEDE6;
+    --border:#EDEDE6; --line:rgba(255,255,255,.18); --dim:#8A8474;
+    --accent:#3FB950; --warn:#E8902E;
+    --c1:#3FB950; --c2:#4493D6; --c3:#D86A98; --c4:#E8902E; --c5:#9A8FD0; --c6:#8A8474;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);
+    font-feature-settings:"liga" 0,"calt" 0;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+  .card{border:2px solid var(--border);background:var(--surface);padding:18px;border-radius:0;}
+  .push{transition:transform 90ms linear,box-shadow 90ms linear;}
+  .push:hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 0 var(--border);}
+  .tag{display:inline-block;border:2px solid var(--border);background:var(--bg);padding:3px 9px;
+    font-size:12px;font-family:var(--mono);}
+  .tag.empty{border-style:dashed;color:var(--dim);}
+  .term{border:2px solid var(--border);background:var(--bg-soft);}
+  .term-bar{background:var(--fg);color:var(--bg);padding:7px 12px;font-size:11px;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;}
+  .term-body{padding:14px;}
+  .site-nav{display:flex;align-items:center;border-bottom:2px solid var(--border);position:sticky;
+    top:0;z-index:50;background:var(--bg);}
+  .site-nav .brand{padding:14px 16px;font-weight:700;}
+  .site-nav a{padding:14px 16px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;
+    border-left:2px solid var(--border);}
+  .site-nav a:hover,.site-nav a[aria-current="page"]{background:var(--fg);color:var(--bg);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  @media (prefers-reduced-motion:reduce){.push:hover{transform:none;box-shadow:none;}}
+
+  /* ============ NAV THEME TOGGLE (segmented, brutalist) ============ */
+  .site-nav .seg { margin-left: auto; display: inline-flex; border-left: 2px solid var(--border); flex: none; }
+  .site-nav .seg button {
+    appearance: none; border: 0; border-left: 2px solid var(--border);
+    background: var(--bg); color: var(--dim);
+    font: inherit; font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: .04em; text-transform: uppercase; padding: 14px 14px; cursor: pointer;
+  }
+  .site-nav .seg button:first-child { border-left: 0; }
+  .site-nav .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .site-nav .seg button:hover { background: var(--fg); color: var(--bg); }
+  .site-nav .brand { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 38vw; }
+  /* local override (not in canonical block): let nav wrap so the toggle drops to a
+     second row on narrow screens (~375px) instead of causing horizontal overflow. */
+  .site-nav { flex-wrap: wrap; }
+
+  /* ============ LAYOUT SCAFFOLD ============ */
+  .wrap { padding: 0 clamp(20px, 4vw, 40px) 80px; }
+  section { margin-top: 56px; }
+  .eyebrow {
+    display: flex; align-items: baseline; gap: 10px;
+    font-size: 12px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--fg); margin: 0 0 20px;
+  }
+  .eyebrow::before { content: "$"; color: var(--accent); }
+  .eyebrow .rule { flex: 1 1 auto; height: 0; border-top: 1px dashed var(--line); transform: translateY(-3px); }
+
+  /* ============ HERO (big mono headline) ============ */
+  header.hero {
+    max-width: var(--maxw); margin: 0 auto;
+    padding: clamp(48px, 9vh, 96px) clamp(20px, 4vw, 40px) clamp(32px, 5vh, 56px);
+  }
+  .hero .kicker {
+    font-size: 12px; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 20px;
+  }
+  .hero .kicker::before { content: "$ "; }
+  .hero h1 {
+    font-family: var(--mono);
+    font-size: clamp(38px, 7vw, 84px); font-weight: 800;
+    letter-spacing: -0.03em; line-height: 1.0; margin: 0 0 26px;
+    color: var(--fg); text-wrap: balance; overflow-wrap: anywhere;
+  }
+  .hero .idea {
+    font-family: var(--mono);
+    font-size: clamp(16px, 2.4vw, 22px); font-weight: 400;
+    line-height: 1.5; color: var(--dim); max-width: 62ch; margin: 0; text-wrap: pretty;
+  }
+  /* live + repo links (optional, top of overview) */
+  .hero-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+  .hero-links .ext {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 2px solid var(--border); background: var(--surface);
+    padding: 8px 13px; font-size: 13px; font-weight: 700;
+    letter-spacing: .03em; text-transform: uppercase;
+  }
+  .hero-links .ext:hover { background: var(--fg); color: var(--bg); }
+  .hero-links .ext span { color: var(--accent); font-weight: 800; }
+  .hero-links .ext:hover span { color: var(--bg); }
+
+  /* ============ THE STACK, EXPLAINED (cards: what it is + role here) ============ */
+  .stack-explained {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px; padding-bottom: 22px; margin-bottom: 22px;
+    border-bottom: 2px solid var(--border);
+  }
+  .stack-card {
+    border: 2px solid var(--border); background: var(--surface); padding: 14px 16px;
+    display: flex; flex-direction: column;
+  }
+  .stack-card .sc-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 9px; }
+  .stack-card .sc-name { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; }
+  .stack-card .sc-cat { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+  .stack-card .sc-ver { font-size: 11px; color: var(--dim); margin-left: auto; font-variant-numeric: tabular-nums; }
+  .stack-card .sc-what { font-size: 13px; line-height: 1.55; color: var(--fg); margin: 0 0 10px; text-wrap: pretty; }
+  .stack-card .sc-what.muted { color: var(--dim); font-style: italic; }   /* degraded: no sourced definition */
+  .stack-card .sc-here { font-size: 12.5px; line-height: 1.5; color: var(--dim); margin: 0; }
+  .stack-card .sc-here b { color: var(--accent); font-weight: 700; }
+  .stack-card .sc-why {
+    margin-top: 10px; align-self: flex-start; font-size: 12px; font-weight: 700;
+    color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 1px;
+  }
+  .stack-card .sc-why:hover { background: var(--accent); color: var(--bg); }
+  .stack-card.empty { border-style: dashed; }
+  .stack-card.empty .sc-what { color: var(--dim); font-style: italic; }
+
+  /* ============ GLOSSARY (optional jargon defs) ============ */
+  .glossary { margin: 0; max-width: 80ch; }
+  .glossary > div { padding: 14px 0; border-top: 1px dashed var(--line); }
+  .glossary > div:first-child { border-top: 0; padding-top: 0; }
+  .glossary dt { font-size: 14px; font-weight: 800; color: var(--fg); }
+  .glossary dt::before { content: "› "; color: var(--accent); }
+  .glossary dd { margin: 6px 0 0; font-size: 13px; line-height: 1.55; color: var(--dim); }
+
+  /* full stack — secondary, collapsed under a details disclosure */
+  .stack-full { margin-top: 4px; }
+  .stack-full > summary {
+    cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--dim); border: 2px solid var(--border); background: var(--bg);
+    padding: 7px 12px; user-select: none;
+  }
+  .stack-full > summary::-webkit-details-marker { display: none; }
+  .stack-full > summary::before { content: "+ "; color: var(--accent); font-weight: 800; }
+  .stack-full[open] > summary::before { content: "− "; }
+  .stack-full > summary:hover { background: var(--fg); color: var(--bg); }
+  .stack-full[open] > summary { margin-bottom: 16px; }
+  .stack-group + .stack-group { margin-top: 20px; }
+  .stack-group .gl {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--dim); margin-bottom: 12px;
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tags .tag { font-size: 12px; padding: 4px 10px; }
+
+  /* ============ WHY-STACK CARDS ============ */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .why-card { display: flex; flex-direction: column; }
+  .why-card .choice {
+    font-family: var(--mono); font-size: 17px; font-weight: 800;
+    letter-spacing: -0.01em; line-height: 1.25; color: var(--fg);
+    margin: 0 0 10px; text-wrap: pretty;
+  }
+  .why-card .choice::before { content: "› "; color: var(--accent); }
+  .why-card .why {
+    color: var(--dim); font-size: 14px; line-height: 1.55;
+    margin: 0 0 16px; text-wrap: pretty;
+  }
+  .deep {
+    margin-top: auto; font-size: 13px; font-weight: 700;
+    color: var(--accent); text-decoration: none;
+    border-bottom: 2px solid var(--accent); padding-bottom: 1px;
+    align-self: flex-start;
+  }
+  .deep:hover { background: var(--accent); color: var(--bg); }
+  .deep:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .why-note {
+    color: var(--dim); font-size: 14px; line-height: 1.6; max-width: 62ch; margin: 0;
+  }
+
+  /* ============ VALUE POINTS (What it gives you) ============ */
+  .value { list-style: none; margin: 0; padding: 0; max-width: 72ch; }
+  .value li {
+    padding: 16px 0; border-top: 1px dashed var(--line);
+    color: var(--fg); font-size: 15px; line-height: 1.55; text-wrap: pretty;
+  }
+  .value li:first-child { border-top: 0; padding-top: 0; }
+  .value li::before { content: "› "; color: var(--accent); font-weight: 800; }
+  .value li b { font-weight: 700; color: var(--accent); }
+
+  /* ============ DOORS (big link cards: Data + Course + Security) ============ */
+  .doors { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+  .door {
+    display: flex; flex-direction: column; justify-content: space-between;
+    min-height: 168px; padding: 28px 30px; text-decoration: none; color: var(--fg);
+  }
+  .door .dlbl {
+    font-size: 11px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--dim); margin: 0 0 14px;
+  }
+  .door .dlbl::before { content: "$ "; color: var(--accent); }
+  .door .dtitle {
+    font-family: var(--mono); font-size: clamp(26px, 3.4vw, 38px); font-weight: 800;
+    letter-spacing: -0.015em; line-height: 1.05; display: flex; align-items: center; gap: 12px;
+  }
+  .door .dtitle .arrow { color: var(--accent); transition: transform .18s ease; }
+  .door:hover .dtitle .arrow { transform: translateX(4px); }
+  .door .ddesc { color: var(--dim); font-size: 14px; line-height: 1.5; margin: 14px 0 0; }
+  /* disabled door (thin project — course unavailable). Not hidden: layout stays coherent. */
+  .door.disabled {
+    cursor: not-allowed; background: var(--bg-soft);
+    border-style: dashed; color: var(--dim); pointer-events: none;
+  }
+  .door.disabled:hover { transform: none; box-shadow: none; }
+  .door.disabled .dtitle { color: var(--dim); }
+  .door.disabled .dtitle .arrow { color: var(--dim); }
+  .door.disabled .ddesc { color: var(--dim); }
+
+  /* ============ FOOTER ============ */
+  footer {
+    margin-top: 72px; padding-top: 22px;
+    border-top: 2px solid var(--border); text-align: center;
+    color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 680px) {
+    .doors { grid-template-columns: 1fr; }
+    .site-nav .brand { max-width: 28vw; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ SHARED TOP-NAV (canonical brutalist) ============ -->
+<nav class="site-nav" aria-label="Project site">
+  <span class="brand">codehelm</span>
+  <a href="index.html" data-page="overview" aria-current="page">Overview</a>
+  <a href="report.html" data-page="data">Data</a>
+  <a href="course.html" data-page="course">Course</a>
+  <a href="security.html" data-page="security">Security</a>
+  <div class="seg" role="group" aria-label="Color theme">
+    <button id="t-light" aria-pressed="true">Light</button>
+    <button id="t-dark" aria-pressed="false">Dark</button>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <p class="kicker">Project overview</p>
+  <h1>codehelm</h1>
+  <p class="idea">A local-only web UI that puts every Claude Code session and a real shell for each project into one Chromium window — reading the ~/.claude/projects JSONL you already have, spawning live terminals per tab, and never touching the cloud.</p>
+  <div class="hero-links">
+    <a class="ext" href="https://github.com/bartek-filipiuk/codehelm" target="_blank" rel="noopener noreferrer">Repository <span aria-hidden="true">↗</span></a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ THE STACK, EXPLAINED ============ -->
+  <section>
+    <p class="eyebrow">The stack, explained<span class="rule"></span></p>
+    <div class="stack-explained">
+      <div class="stack-card" id="tech-next">
+        <div class="sc-head"><span class="sc-name">next</span><span class="sc-cat">framework</span><span class="sc-ver">15</span></div>
+        <p class="sc-what">A React framework for building full-stack web apps, with file-based routing, server rendering, and bundling built in. The App Router organises pages, layouts, and API route handlers in one tree.</p>
+        <p class="sc-here"><b>Here:</b> powers the App Router UI and rides on a custom <span class="mono">http.Server</span> for the HTTP path.</p>
+      </div>
+      <div class="stack-card" id="tech-react">
+        <div class="sc-head"><span class="sc-name">react</span><span class="sc-cat">ui library</span><span class="sc-ver">19</span></div>
+        <p class="sc-what">A JavaScript library for building user interfaces out of composable components whose output updates as their data changes. It is the rendering layer most of the modern web is built on.</p>
+        <p class="sc-here"><b>Here:</b> renders the whole interface — sidebar, conversation viewer, and terminal tabs.</p>
+      </div>
+      <div class="stack-card" id="tech-node-pty">
+        <div class="sc-head"><span class="sc-name">node-pty</span><span class="sc-cat">pseudoterminal</span><span class="sc-ver">0.12</span></div>
+        <p class="sc-what">A Node.js library that forks a real pseudoterminal (PTY) process, so you can spawn and drive shells exactly as if they were running in a terminal. It is the foundation for terminal emulators built on Node.</p>
+        <p class="sc-here"><b>Here:</b> forks the real shells behind every terminal tab.</p>
+        <a class="sc-why" href="#why-node-pty">why this choice →</a>
+      </div>
+      <div class="stack-card" id="tech-xterm">
+        <div class="sc-head"><span class="sc-name">xterm.js</span><span class="sc-cat">terminal emulator</span><span class="sc-ver">5.5</span></div>
+        <p class="sc-what">A front-end terminal emulator component that lets a web app embed a fully-featured terminal in the browser. It renders terminal output and handles keyboard input for shells and command-line programs.</p>
+        <p class="sc-here"><b>Here:</b> draws those shells in the browser, addons for fit, WebGL, and links.</p>
+      </div>
+      <div class="stack-card" id="tech-ws">
+        <div class="sc-head"><span class="sc-name">ws</span><span class="sc-cat">websocket</span><span class="sc-ver">8.18</span></div>
+        <p class="sc-what">A simple, fast WebSocket client and server implementation for Node.js. It keeps an open, two-way connection so a server and browser can exchange messages in real time.</p>
+        <p class="sc-here"><b>Here:</b> carries PTY bytes and file-watcher events over one authenticated socket.</p>
+        <a class="sc-why" href="#why-ws">why this choice →</a>
+      </div>
+      <div class="stack-card" id="tech-chokidar">
+        <div class="sc-head"><span class="sc-name">chokidar</span><span class="sc-cat">file watcher</span><span class="sc-ver">4.0</span></div>
+        <p class="sc-what">A cross-platform Node.js library for watching files and folders and reacting to add, change, and delete events. Build tools and dev servers use it to trigger work automatically when files change.</p>
+        <p class="sc-here"><b>Here:</b> watches <span class="mono">~/.claude/projects/</span> for live session changes.</p>
+        <a class="sc-why" href="#why-chokidar">why this choice →</a>
+      </div>
+      <div class="stack-card" id="tech-croner">
+        <div class="sc-head"><span class="sc-name">croner</span><span class="sc-cat">scheduler</span><span class="sc-ver">10.0</span></div>
+        <p class="sc-what">A JavaScript and TypeScript library for scheduling tasks with cron expressions, running a function at set times or intervals. It can also compute when the next run of an expression is due.</p>
+        <p class="sc-here"><b>Here:</b> fires scheduled prompts into persistent Claude tabs.</p>
+        <a class="sc-why" href="#why-croner">why this choice →</a>
+      </div>
+      <div class="stack-card" id="tech-zustand">
+        <div class="sc-head"><span class="sc-name">zustand</span><span class="sc-cat">state</span><span class="sc-ver">5.0</span></div>
+        <p class="sc-what">A small, fast state-management library for React with a simple hook-based API for sharing data across components, without the boilerplate of heavier stores.</p>
+        <p class="sc-here"><b>Here:</b> holds local UI state — open tabs, panes, and layout.</p>
+      </div>
+      <div class="stack-card" id="tech-react-query">
+        <div class="sc-head"><span class="sc-name">react-query</span><span class="sc-cat">server state</span><span class="sc-ver">5.62</span></div>
+        <p class="sc-what">A library for managing server state — the fetching, caching, synchronising, and updating of data from APIs. It removes much of the manual work of loading remote data and keeping it fresh.</p>
+        <p class="sc-here"><b>Here:</b> fetches and caches projects and sessions from the REST API.</p>
+      </div>
+      <div class="stack-card" id="tech-react-virtuoso">
+        <div class="sc-head"><span class="sc-name">react-virtuoso</span><span class="sc-cat">virtualization</span><span class="sc-ver">4.12</span></div>
+        <p class="sc-what">A React component for rendering very long lists and tables efficiently by drawing only the items currently on screen. It handles items of varying sizes so large datasets scroll smoothly.</p>
+        <p class="sc-here"><b>Here:</b> virtualises the long conversation and session lists.</p>
+        <a class="sc-why" href="#why-react-virtuoso">why this choice →</a>
+      </div>
+      <div class="stack-card" id="tech-zod">
+        <div class="sc-head"><span class="sc-name">zod</span><span class="sc-cat">validation</span><span class="sc-ver">3.23</span></div>
+        <p class="sc-what">A TypeScript-first schema validation library that describes the expected shape of data and checks that real values match it. From one schema it also infers the matching static types.</p>
+        <p class="sc-here"><b>Here:</b> validates every request body and JSONL event shape.</p>
+      </div>
+      <div class="stack-card" id="tech-tailwindcss">
+        <div class="sc-head"><span class="sc-name">tailwindcss</span><span class="sc-cat">styling</span><span class="sc-ver">4.0</span></div>
+        <p class="sc-what">A utility-first CSS framework that styles elements through small, composable classes applied directly in markup, instead of writing separate stylesheets. It keeps styling close to the components.</p>
+        <p class="sc-here"><b>Here:</b> styles the interface alongside shadcn / Radix primitives.</p>
+      </div>
+      <div class="stack-card" id="tech-shiki">
+        <div class="sc-head"><span class="sc-name">shiki</span><span class="sc-cat">highlighting</span><span class="sc-ver">1.24</span></div>
+        <p class="sc-what">A syntax highlighter that colours source code using the same TextMate grammars and themes as code editors, producing accurate, editor-quality highlighting for code blocks on the web.</p>
+        <p class="sc-here"><b>Here:</b> highlights code blocks inside rendered sessions, loaded lazily per language.</p>
+      </div>
+    </div>
+    <details class="stack-full">
+      <summary>full stack</summary>
+      <div class="stack-group">
+        <div class="gl">Production</div>
+        <div class="tags"><span class="tag">react-dom 19.0.0</span><span class="tag">@codemirror/commands 6.10.3</span><span class="tag">@codemirror/lang-markdown 6.3.0</span><span class="tag">@codemirror/state 6.5.0</span><span class="tag">@codemirror/theme-one-dark 6.1.2</span><span class="tag">@codemirror/view 6.35.0</span><span class="tag">@radix-ui/react-dialog 1.1.15</span><span class="tag">@radix-ui/react-popover 1.1.15</span><span class="tag">@radix-ui/react-scroll-area 1.2.10</span><span class="tag">@radix-ui/react-slot 1.2.4</span><span class="tag">@radix-ui/react-tooltip 1.2.8</span><span class="tag">@radix-ui/react-visually-hidden 1.2.4</span><span class="tag">@xterm/addon-canvas 0.7.0</span><span class="tag">@xterm/addon-fit 0.10.0</span><span class="tag">@xterm/addon-web-links 0.11.0</span><span class="tag">@xterm/addon-webgl 0.19.0</span><span class="tag">class-variance-authority 0.7.1</span><span class="tag">clsx 2.1.1</span><span class="tag">cmdk 1.1.1</span><span class="tag">diff 7.0.0</span><span class="tag">lucide-react 1.8.0</span><span class="tag">pino 9.5.0</span><span class="tag">react-markdown 9.0.1</span><span class="tag">react-resizable-panels 4.10.0</span><span class="tag">rehype-sanitize 6.0.0</span><span class="tag">sonner 2.0.7</span><span class="tag">tailwind-merge 3.5.0</span><span class="tag">tw-animate-css 1.4.0</span></div>
+      </div>
+      <div class="stack-group">
+        <div class="gl">Dev</div>
+        <div class="tags"><span class="tag">typescript 5.7.0</span><span class="tag">tsx 4.19.0</span><span class="tag">vitest 2.1.8</span><span class="tag">@vitest/ui 2.1.8</span><span class="tag">@playwright/test 1.49.0</span><span class="tag">@testing-library/react 16.3.2</span><span class="tag">@testing-library/dom 10.4.1</span><span class="tag">@testing-library/user-event 14.6.1</span><span class="tag">jsdom 29.0.2</span><span class="tag">supertest 7.0.0</span><span class="tag">@types/supertest 6.0.2</span><span class="tag">eslint 9.16.0</span><span class="tag">eslint-config-next 15.0.0</span><span class="tag">eslint-plugin-react-hooks 7.0.1</span><span class="tag">@eslint/eslintrc 3.2.0</span><span class="tag">prettier 3.4.0</span><span class="tag">husky 9.1.7</span><span class="tag">lint-staged 15.2.10</span><span class="tag">pino-pretty 13.0.0</span><span class="tag">@tailwindcss/postcss 4.0.0</span><span class="tag">@types/node 22.10.0</span><span class="tag">@types/react 19.0.0</span><span class="tag">@types/react-dom 19.0.0</span><span class="tag">@types/ws 8.5.13</span><span class="tag">@types/diff 7.0.0</span></div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ WHY THIS STACK ============ -->
+  <section>
+    <p class="eyebrow">Why this stack<span class="rule"></span></p>
+    <div class="why-grid">
+      <div class="why-card" id="why-node-pty">
+        <p class="choice">node-pty behind client-ACK backpressure</p>
+        <p class="why">A real shell can out-run the browser, so the PTY is paused at 1 MB unacked and capped at 16 tabs — bounded memory no matter what runs.</p>
+        <a class="deep" href="course.html#beat-pty-backpressure">full decision in the course →</a>
+        <a class="deep" href="#tech-node-pty">what is node-pty ↑</a>
+      </div>
+      <div class="why-card" id="why-ws">
+        <p class="choice">One http.Server for HTTP and raw WebSockets</p>
+        <p class="why">A single listener means one bind, one Origin check, and one cookie to secure — instead of a second server doubling the attack surface.</p>
+        <a class="deep" href="course.html#beat-single-server-ws">full decision in the course →</a>
+        <a class="deep" href="#tech-ws">what is ws ↑</a>
+      </div>
+      <div class="why-card" id="why-croner">
+        <p class="choice">croner fires prompts only when Claude is idle</p>
+        <p class="why">A ready-check, a per-tab mutex, and bracketed paste land a scheduled prompt at the input prompt — never in the middle of a streaming response.</p>
+        <a class="deep" href="course.html#beat-cron-bracketed-paste">full decision in the course →</a>
+        <a class="deep" href="#tech-croner">what is croner ↑</a>
+      </div>
+      <div class="why-card" id="why-chokidar">
+        <p class="choice">chokidar watch, not interval polling</p>
+        <p class="why">An OS-level watch costs nothing until a session file actually changes, then pushes the update over WebSocket — the opposite spend profile from a poll.</p>
+        <a class="deep" href="course.html#beat-fs-watch-push">full decision in the course →</a>
+        <a class="deep" href="#tech-chokidar">what is chokidar ↑</a>
+      </div>
+      <div class="why-card" id="why-react-virtuoso">
+        <p class="choice">react-virtuoso over render-everything</p>
+        <p class="why">Virtualising mounts only the rows on screen, so a 2000-message session scrolls above 30 fps instead of freezing the tab on open.</p>
+        <a class="deep" href="course.html#beat-streaming-jsonl-virtualised">full decision in the course →</a>
+        <a class="deep" href="#tech-react-virtuoso">what is react-virtuoso ↑</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WHAT IT GIVES YOU ============ -->
+  <section>
+    <p class="eyebrow">What it gives you<span class="rule"></span></p>
+    <ul class="value">
+      <li><b>One window for everything</b> — every Claude Code project, its session history, and a real shell per tab, instead of juggling terminal windows.</li>
+      <li><b>Sessions as readable conversations</b> — JSONL streamed and parsed into tool-use cards and Edit/Write diffs, with search, filters, and an outline.</li>
+      <li><b>Up to 16 live terminals</b> — node-pty PTYs over one authenticated WebSocket, each with a re-attach ring buffer so a reload doesn't lose your place.</li>
+      <li><b>Cron that types for you</b> — schedule prompts into a live Claude tab, fired only when it's actually at the input prompt.</li>
+      <li><b>Live without polling</b> — chokidar watches <span class="mono">~/.claude/projects</span> and pushes session changes over WebSocket as Claude writes.</li>
+      <li><b>Local by design</b> — runs on 127.0.0.1 behind a one-shot token, CSRF, a Host/Origin allowlist, and a CSP nonce; zero cloud, zero extra API cost.</li>
+    </ul>
+  </section>
+
+  <!-- ============ GLOSSARY (optional — empty string when no jargon terms) ============ -->
+  <section>
+    <p class="eyebrow">Glossary<span class="rule"></span></p>
+    <dl class="glossary">
+      <div><dt>PTY (pseudoterminal)</dt><dd>A pair of virtual devices that emulates a real terminal, letting one program drive another as if a user were typing and reading at a physical terminal.</dd></div>
+      <div><dt>JSONL</dt><dd>JSON Lines — a text format where each line is one complete, independent JSON value, well suited to streaming and large logs read one record at a time.</dd></div>
+      <div><dt>backpressure</dt><dd>Flow control where a slower consumer tells a faster producer to slow down, preventing unbounded buffering, memory blow-ups, or dropped data.</dd></div>
+      <div><dt>bracketed paste</dt><dd>A terminal mode that wraps pasted text in marker sequences so a program can tell pasted input apart from typed keystrokes and handle it differently.</dd></div>
+    </dl>
+  </section>
+
+  <!-- ============ TWO DOORS ============ -->
+  <section class="doors">
+    <a class="card push door" href="report.html">
+      <p class="dlbl">The numbers</p>
+      <span class="dtitle">Data <span class="arrow" aria-hidden="true">&rarr;</span></span>
+      <p class="ddesc">Lines of code, work time across sessions, the language split, and the full file breakdown — the dry numbers behind codehelm.</p>
+    </a>
+    <a class="card push door" href="course.html">
+      <p class="dlbl">Why it's built this way</p>
+      <span class="dtitle">Course <span class="arrow" aria-hidden="true">&rarr;</span></span>
+      <p class="ddesc">A cinematic "why" course — the architectural decisions, the traps they avoided, and the roads not taken.</p>
+    </a>
+    <div class="card door disabled" aria-disabled="true">
+      <p class="dlbl">Audited &amp; remediated</p>
+      <span class="dtitle">Security <span class="arrow" aria-hidden="true">&rarr;</span></span>
+      <p class="ddesc">security audit not run yet</p>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="num">Generated 2026-05-31 22:30 GMT+2 · v1.0.0</footer>
+
+</div>
+
+<script>
+  /* Theme toggle (vanilla, persisted). Default light; restore from ps-theme. */
+  (function () {
+    var root = document.documentElement;
+    var bd = document.getElementById('t-dark');
+    var bl = document.getElementById('t-light');
+    var KEY = 'ps-theme';
+
+    function apply(theme) {
+      root.setAttribute('data-theme', theme);
+      var dark = theme === 'dark';
+      bd.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      bl.setAttribute('aria-pressed', dark ? 'false' : 'true');
+      try { localStorage.setItem(KEY, theme); } catch (e) {}
+    }
+
+    try {
+      var saved = localStorage.getItem(KEY);
+      if (saved === 'light' || saved === 'dark') apply(saved);
+    } catch (e) {}
+
+    bd.addEventListener('click', function () { apply('dark'); });
+    bl.addEventListener('click', function () { apply('light'); });
+  })();
+</script>
+</body>
+</html>

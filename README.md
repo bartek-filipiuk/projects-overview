@@ -11,6 +11,7 @@ Overview · Data · Course · Security) served by a tiny nginx container — no 
 | Folder        | Subdomain                       |
 |---------------|---------------------------------|
 | `fastduels/`  | https://fastduels.67projects.app |
+| `codehelm/`   | https://codehelm.67projects.app |
 
 ## Adding a new site
 

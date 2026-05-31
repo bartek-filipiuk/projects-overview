@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>codehelm · masterclass</title>
+<script>document.documentElement.classList.add('js')</script>
+<style>
+  /* ============ CANONICAL THEME BLOCK (source of truth) ============ */
+  :root {
+    --bg:#F5F0E8; --bg-soft:#EFE8D7; --surface:#FFFFFF; --fg:#0A0A0A;
+    --border:#000000; --line:rgba(0,0,0,.16); --dim:#5C5648;
+    --accent:#1A7A1A; --warn:#D97706;
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+    --maxw:1100px;
+    --c1:#1A7A1A; --c2:#0E6BA8; --c3:#B8336A; --c4:#D97706; --c5:#5E548E; --c6:#5C5648;
+  }
+  html[data-theme="dark"]{
+    --bg:#0B0B0B; --bg-soft:#141414; --surface:#161616; --fg:#EDEDE6;
+    --border:#EDEDE6; --line:rgba(255,255,255,.18); --dim:#8A8474;
+    --accent:#3FB950; --warn:#E8902E;
+    --c1:#3FB950; --c2:#4493D6; --c3:#D86A98; --c4:#E8902E; --c5:#9A8FD0; --c6:#8A8474;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);
+    font-feature-settings:"liga" 0,"calt" 0;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+  .card{border:2px solid var(--border);background:var(--surface);padding:18px;border-radius:0;}
+  .push{transition:transform 90ms linear,box-shadow 90ms linear;}
+  .push:hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 0 var(--border);}
+  .tag{display:inline-block;border:2px solid var(--border);background:var(--bg);padding:3px 9px;
+    font-size:12px;font-family:var(--mono);}
+  .tag.empty{border-style:dashed;color:var(--dim);}
+  .term{border:2px solid var(--border);background:var(--bg-soft);}
+  .term-bar{background:var(--fg);color:var(--bg);padding:7px 12px;font-size:11px;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;}
+  .term-body{padding:14px;}
+  .site-nav{display:flex;align-items:center;border-bottom:2px solid var(--border);position:sticky;
+    top:0;z-index:50;background:var(--bg);}
+  .site-nav .brand{padding:14px 16px;font-weight:700;}
+  .site-nav a{padding:14px 16px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;
+    border-left:2px solid var(--border);}
+  .site-nav a:hover,.site-nav a[aria-current="page"]{background:var(--fg);color:var(--bg);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  @media (prefers-reduced-motion:reduce){.push:hover{transform:none;box-shadow:none;}}
+
+  /* ============ COURSE-LOCAL ADDITIONS (layout vars, not theme tokens) ============ */
+  /* --readw is a narrower measure for narrative prose; --mono is the single typeface (brutalist). */
+  :root { --readw: 760px; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body { font-size: 16px; line-height: 1.6; text-rendering: optimizeLegibility; }
+  .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+  .mono { font-family: var(--mono); background:var(--bg-soft); border:1px solid var(--line);
+    padding:0 4px; color:var(--dim); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+
+  /* ============ READING PROGRESS BAR ============ */
+  .progress {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: transparent;
+    z-index: 50;
+    pointer-events: none;
+  }
+  .progress > i {
+    display: block;
+    height: 100%;
+    width: 0%;                 /* JS sets width in Task 5 */
+    background: var(--accent);
+    transition: width .08s linear;
+  }
+
+  /* ============ THEME TOGGLE (segmented, brutalist — copied from report-html) ============ */
+  .seg {
+    display: inline-flex;
+    border: 2px solid var(--border);
+    flex: none;
+    background: var(--bg);
+  }
+  .seg button {
+    appearance: none;
+    border: 0;
+    border-left: 2px solid var(--border);
+    background: var(--bg);
+    color: var(--dim);
+    font: inherit;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  .seg button:first-child { border-left: 0; }
+  .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .seg button:hover { background: var(--fg); color: var(--bg); }
+  .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* theme toggle floats top-right, out of the scroll flow */
+  .toggle-dock {
+    position: fixed;
+    top: 16px; right: 16px;
+    z-index: 40;
+  }
+
+  /* ============ SCROLL-REVEAL (states only; .in added by Task 5 JS) ============ */
+  /* graceful degradation: no-JS / pre-JS state is visible; hidden state gated on html.js */
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  html.js .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  html.js .reveal.in {
+    opacity: 1;
+    transform: none;
+    transition: opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html.js .reveal { opacity: 1; transform: none; }
+    html.js .reveal.in { transition: none; }
+  }
+
+  /* ============ HERO ============ */
+  header.hero {
+    min-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: clamp(48px, 9vh, 120px) clamp(20px, 5vw, 64px) clamp(40px, 7vh, 80px);
+  }
+  .hero .kicker {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 22px;
+  }
+  .hero .kicker::before { content: "$ "; color: var(--accent); }
+  .hero h1 {
+    font-family: var(--mono);
+    font-size: clamp(40px, 8vw, 92px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 0.98;
+    margin: 0 0 28px;
+    text-wrap: balance;
+  }
+  .hero .lede {
+    font-family: var(--mono);
+    font-size: clamp(17px, 2.4vw, 22px);
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--dim);
+    max-width: 62ch;
+    margin: 0 0 40px;
+    text-wrap: pretty;
+  }
+  .hero .learn {
+    background: var(--bg-soft);
+    border: 2px solid var(--border);
+    border-radius: 0;
+    padding: 24px 28px;
+    max-width: var(--readw);
+  }
+  .hero .learn .lbl {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin: 0 0 12px;
+  }
+  .hero .learn .lbl::before { content: "› "; color: var(--accent); }
+  .hero .learn p { margin: 0; color: var(--fg); font-size: 16px; line-height: 1.6; }
+  .hero .learn ul { margin: 0; padding-left: 20px; color: var(--fg); }
+  .hero .learn li { margin: 6px 0; line-height: 1.55; }
+  .hero .meta {
+    margin-top: 36px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    align-items: center;
+    color: var(--dim);
+    font-size: 13.5px;
+  }
+  .hero .meta .count { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .hero .meta .dot { margin: 0 10px; color: var(--dim); }
+  .hero .scroll-cue {
+    margin-top: 48px;
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  /* ============ SCENE (one chapter / decision beat) — terminal-brutalist ============ */
+  /* Each scene is a .term box: 2px border, --bg-soft body, inverted .term-bar header
+     (the .beat-label renders AS the bar). border-radius:0, sharp brutalist. */
+  .scene {
+    max-width: var(--maxw);
+    margin: clamp(48px, 9vh, 96px) auto 0;
+    border: 2px solid var(--border);
+    background: var(--bg-soft);
+    /* deep-link landing: keep an anchored scene (course.html#beat-<id>) clear of
+       project-site's injected 52px sticky nav (+ breathing room); harmless standalone */
+    scroll-margin-top: 64px;
+  }
+  /* scene inner padding lives on the children wrapper via direct-child rule */
+  .scene > *:not(.beat-label) {
+    max-width: var(--readw);
+    margin-left: clamp(20px, 5vw, 56px);
+    margin-right: clamp(20px, 5vw, 56px);
+  }
+  .scene > *:not(.beat-label):first-of-type { margin-top: clamp(36px, 6vh, 64px); }
+  .scene > *:last-child { margin-bottom: clamp(40px, 7vh, 72px); }
+
+  /* beat-label: rendered as the inverted terminal bar carrying EPISODE NN · TOPIC.
+     scoped .scene .beat-label so it beats the generic `.scene p { color: var(--fg) }` rule. */
+  .scene .beat-label {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    background: var(--fg);
+    color: var(--bg);
+    padding: 9px clamp(20px, 5vw, 56px);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin: 0 0 4px;
+  }
+  .scene .beat-label::before { content: "EPISODE"; opacity: .7; }
+  .scene .beat-label .nn { color: var(--bg); font-variant-numeric: tabular-nums; }
+  .scene .beat-label .sep { color: var(--bg); opacity: .55; }
+  /* inferred-confidence flag sits in the bar — keep it legible on the dark bar */
+  .scene .beat-label .confidence { margin-left: auto; color: var(--bg); border-color: var(--bg); }
+
+  /* hook: big mono headline, tight letter-spacing */
+  .hook {
+    font-family: var(--mono);
+    font-size: clamp(28px, 5vw, 50px);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+    margin: 0 0 28px;
+    text-wrap: balance;
+    color: var(--fg);
+  }
+  .scene p {
+    font-size: clamp(16px, 1.9vw, 18.5px);
+    line-height: 1.66;
+    color: var(--fg);
+    text-wrap: pretty;
+    margin: 0 0 20px;
+  }
+  .scene p.dim { color: var(--dim); }
+
+  /* trap: tension callout — bordered, left warn-accent, sharp */
+  .trap {
+    border: 2px solid var(--border);
+    border-left: 6px solid var(--warn);
+    background: var(--surface);
+    border-radius: 0;
+    padding: 16px 20px;
+    margin: 0 0 28px;
+  }
+  .trap .lbl {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--warn);
+    display: block;
+    margin: 0 0 8px;
+  }
+  .trap .lbl::before { content: "! "; }
+  .trap p { margin: 0; color: var(--fg); font-size: 16.5px; line-height: 1.55; }
+
+  /* diagram: bordered SVG container, toggleable layers — brutalist */
+  .diagram {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 0;
+    padding: 24px 24px 20px;
+    margin: 0 0 30px;
+  }
+  .diagram svg { display: block; width: 100%; height: auto; }
+  .diagram .layer { transition: opacity .35s ease; }
+  .diagram .layer.hidden { display: none; }       /* hard toggle */
+  .diagram .layer.dim { opacity: 0.18; }           /* soft toggle */
+  .diagram .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+  }
+  /* brutalist toggle: bordered .tag-style button; active = accent fill */
+  .diagram .controls button {
+    appearance: none;
+    font: inherit;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    color: var(--fg);
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 0;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: transform 90ms linear, box-shadow 90ms linear;
+  }
+  .diagram .controls button[aria-pressed="true"] {
+    color: var(--bg);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .diagram .controls button:hover { transform: translate(-2px,-2px); box-shadow: 3px 3px 0 0 var(--border); }
+  .diagram .controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .diagram .cap {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--dim);
+    line-height: 1.5;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .diagram .controls button:hover { transform: none; box-shadow: none; }
+  }
+
+  /* reveal-decision: the "decision" block — bordered callout, accent */
+  .reveal-decision {
+    border: 2px solid var(--accent);
+    background: var(--surface);
+    border-radius: 0;
+    padding: 16px 20px;
+    margin: 0 0 26px;
+  }
+  .reveal-decision .lbl {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin: 0 0 10px;
+  }
+  .reveal-decision .lbl::before { content: "› "; }
+  .reveal-decision .choice {
+    font-family: var(--mono);
+    font-size: clamp(19px, 2.6vw, 26px);
+    font-weight: 700;
+    letter-spacing: -0.018em;
+    line-height: 1.25;
+    color: var(--fg);
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  /* road: collapsible "road not taken" — brutalist sharp bordered <details>/<summary> */
+  .road {
+    border: 2px solid var(--border);
+    border-radius: 0;
+    background: var(--surface);
+    margin: 0 0 28px;
+    overflow: hidden;
+  }
+  .road > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 14px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .road > summary::-webkit-details-marker { display: none; }
+  .road > summary:hover { background: var(--bg-soft); color: var(--fg); }
+  .road > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .road > summary::before {
+    content: "[+]";
+    display: inline-block;
+    color: var(--accent);
+    font-size: 13px;
+    line-height: 1;
+    font-weight: 700;
+  }
+  .road[open] > summary { border-bottom: 2px solid var(--border); color: var(--fg); }
+  .road[open] > summary::before { content: "[-]"; }
+  .road .body {
+    padding: 16px 18px;
+    color: var(--dim);
+    font-size: 15.5px;
+    line-height: 1.6;
+  }
+  .road .body p { margin: 0; font-size: inherit; color: inherit; }
+
+  /* evidence: mono, --dim; paths shown as inline-code .mono chips */
+  .evidence {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .evidence .lbl {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin: 0 0 4px;
+  }
+  .evidence .path {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--dim);
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    padding: 2px 6px;
+    align-self: flex-start;
+    max-width: 100%;
+    direction: rtl;          /* left-truncation: keep the filename, drop the prefix */
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* chips inside a scene: scene body is --bg-soft, so chips need --surface to read as chips */
+  .scene .mono, .scene .evidence .path { background: var(--surface); }
+
+  /* confidence flag (documented | inferred) — brutalist .tag */
+  .confidence {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    border: 2px solid var(--border);
+    border-radius: 0;
+    padding: 2px 8px;
+    vertical-align: middle;
+  }
+  .confidence.inferred { color: var(--warn); border-color: var(--warn); }
+
+  /* ============ CLOSING — terminal-brutalist ============ */
+  footer.closing {
+    max-width: var(--maxw);
+    margin: clamp(48px, 9vh, 96px) auto 0;
+    padding: clamp(56px, 11vh, 120px) clamp(20px, 5vw, 64px) clamp(64px, 10vh, 120px);
+    border-top: 2px solid var(--border);
+  }
+  footer.closing .kicker {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 22px;
+  }
+  footer.closing .kicker::before { content: "$ "; color: var(--accent); }
+  footer.closing .synthesis {
+    font-family: var(--mono);
+    font-size: clamp(22px, 3.4vw, 32px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.36;
+    color: var(--fg);
+    max-width: 64ch;
+    margin: 0 0 56px;
+    text-wrap: pretty;
+  }
+  footer.closing .block-lbl {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin: 0 0 16px;
+  }
+  footer.closing .block-lbl::before { content: "› "; color: var(--accent); }
+  .not-done {
+    list-style: none;
+    margin: 0 0 56px;
+    padding: 0;
+    max-width: var(--readw);
+  }
+  .not-done li {
+    padding: 16px 0;
+    border-top: 1px dashed var(--line);
+    color: var(--dim);
+    font-size: 15.5px;
+    line-height: 1.55;
+  }
+  .not-done li:first-child { border-top: 0; }
+  .not-done li b { color: var(--fg); font-weight: 700; }
+  .closing-evidence {
+    list-style: none;
+    margin: 0 0 48px;
+    padding: 0;
+    max-width: var(--readw);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .closing-evidence .path {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--dim);
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    padding: 2px 6px;
+    align-self: flex-start;
+    max-width: 100%;
+    direction: rtl;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  footer.closing .signoff {
+    padding-top: 26px;
+    border-top: 2px solid var(--border);
+    color: var(--dim);
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 680px) {
+    body { font-size: 15px; }
+    header.hero, footer.closing { padding-left: 20px; padding-right: 20px; }
+    .toggle-dock { top: 10px; right: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ SHARED TOP-NAV (injected, canonical brutalist) ============ -->
+<nav class="site-nav" aria-label="Project site">
+  <span class="brand">codehelm</span>
+  <a href="index.html" data-page="overview">Overview</a>
+  <a href="report.html" data-page="data">Data</a>
+  <a href="course.html" data-page="course" aria-current="page">Course</a>
+  <a href="security.html" data-page="security">Security</a>
+</nav>
+<style class="site-nav-css">
+  .site-nav {
+    display: flex; align-items: center;
+    border-bottom: 2px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    background: var(--bg); flex-wrap: wrap;
+  }
+  .site-nav .brand {
+    padding: 14px 16px; font-weight: 700;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 38vw;
+  }
+  .site-nav a {
+    padding: 14px 16px; font-size: 13px; letter-spacing: .04em;
+    text-transform: uppercase; border-left: 2px solid var(--border);
+  }
+  .site-nav a:hover,
+  .site-nav a[aria-current="page"] { background: var(--fg); color: var(--bg); }
+  @media (max-width: 680px) { .site-nav .brand { max-width: 28vw; } }
+</style>
+<style class="site-nav-overrides">
+  .progress { top: 50px; z-index: 50; }
+  .site-nav { padding-right: 104px; }
+  .toggle-dock { top: 8px; right: 16px; z-index: 60; }
+  @media (max-width: 680px) { .toggle-dock { top: 8px; right: 12px; } }
+</style>
+
+<!-- reading progress bar (width driven by Task 5 JS) -->
+<div class="progress" aria-hidden="true"><i></i></div>
+
+<!-- floating theme toggle -->
+<div class="toggle-dock">
+  <div class="seg" role="group" aria-label="Color theme">
+    <button id="t-light" aria-pressed="true">Light</button>
+    <button id="t-dark" aria-pressed="false">Dark</button>
+  </div>
+</div>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <p class="kicker">Build Masterclass</p>
+  <h1>codehelm</h1>
+  <p class="lede">A why-driven tour of codehelm — a local web UI that runs your Claude Code sessions and real shells inside one Chromium window. Each chapter takes one real decision: the trap that looked right, the choice that held, and the road left untaken.</p>
+  <div class="learn">
+    <p class="lbl">What you'll learn</p>
+    <ul>
+      <li>Why a localhost tool still needs a stack of independent auth layers — and why TLS isn't one of them.</li>
+      <li>How a path guard tells <span class="mono">/root</span> apart from <span class="mono">/rootEVIL</span>.</li>
+      <li>Where the security boundary actually sits when the feature <em>is</em> a shell.</li>
+      <li>How to stream a real PTY to a browser without an out-of-memory waiting to happen.</li>
+      <li>Why a terminal lives on the server, so a reload can't kill the work running in it.</li>
+      <li>How cron types a prompt into a live Claude tab without stepping on its output.</li>
+    </ul>
+  </div>
+  <p class="meta">
+    <span class="count num">10</span><span>&nbsp;chapters</span>
+  </p>
+  <p class="scroll-cue">Scroll to begin ↓</p>
+</header>
+
+<!--
+  scene pattern — one chapter = one Decision Beat (the chapters_html slot below is filled with these).
+  Order of beats inside a scene: hook (problem) → trap → (diagram) → reveal (choice) → why → road_not_taken → evidence.
+  Illustrative slots below use ‹angle brackets› on purpose — the real fill uses double-brace tokens, so a
+  correctly-filled course has ZERO double-brace tokens left (this comment must not collide with that grep gate).
+  Each .scene is a terminal-brutalist .term box (2px border, --bg-soft body); the .beat-label
+  renders AS the inverted .term-bar header — CSS prepends "EPISODE", so <span class="nn">01</span>
+  yields "EPISODE 01 · TENANT ISOLATION". Keep beat labels in ENGLISH.
+  Reference structure:
+  <section class="scene">
+    <p class="beat-label reveal"><span class="nn">01</span><span class="sep">·</span><span>Tenant isolation</span></p>
+    <h2 class="hook reveal">‹hook headline / problem›</h2>
+    <p class="dim reveal">‹problem prose — the stakes›</p>
+    <div class="trap reveal"><span class="lbl">The trap</span><p>‹trap›</p></div>
+    <div class="diagram reveal">
+      <svg viewBox="0 0 600 200" role="img" aria-label="...">
+        <g class="layer" data-layer="0">… layer markup …</g>
+        <g class="layer" data-layer="1">… layer markup …</g>
+      </svg>
+      <div class="controls"><button aria-pressed="true" data-toggle="0">Service-layer guards</button><button aria-pressed="true" data-toggle="1">Postgres RLS</button></div>
+      <p class="cap">‹diagram caption›</p>
+    </div>
+    <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">‹choice›</p></div>
+    <p class="reveal">‹why — grounded in evidence›</p>
+    <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>‹road_not_taken›</p></div></details>
+    <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">plans/02-auth-tenancy.md</li></ul>
+  </section>
+-->
+
+<!-- ============ CHAPTERS (generated .scene blocks) ============ -->
+
+<section class="scene" id="beat-one-shot-token">
+  <p class="beat-label reveal"><span class="nn">01</span><span class="sep">·</span><span>A web server that spawns shells</span></p>
+  <h2 class="hook reveal">You put a shell behind a URL.</h2>
+  <p class="dim reveal">codehelm runs a web server on your laptop that can open real terminals and run <span class="mono">claude</span> in any project. That power is the whole point — and it's also a gift to any page already open in your normal browser. A random tab can fire <span class="mono">fetch</span> and <span class="mono">WebSocket</span> at <span class="mono">127.0.0.1</span>, and with DNS rebinding it can make its own domain resolve to your loopback and try again. Localhost is not a wall. It's an address every process on the machine can type.</p>
+  <div class="trap reveal"><span class="lbl">The trap</span><p>The reflex is to shrug: it binds to <span class="mono">127.0.0.1</span>, that's private, ship it. But a bind address says where the socket lives, not who's allowed to talk to it. Any process — including a tab you didn't open on purpose — can reach a loopback port. "It's local" is exactly the assumption a rebinding attack is built to exploit.</p></div>
+  <div class="diagram reveal">
+    <svg viewBox="0 0 600 380" role="img" aria-label="Local trust model — independent defense layers">
+      <g class="layer" data-layer="0"><rect x="20" y="20" width="560" height="70" rx="0" fill="var(--accent)" stroke="var(--border)" stroke-width="2"/><text x="40" y="62" fill="var(--bg)">Host allowlist · 127.0.0.1 only</text></g>
+      <g class="layer" data-layer="1"><rect x="20" y="110" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="152" fill="var(--fg)">HttpOnly · SameSite=Strict cookie</text></g>
+      <g class="layer" data-layer="2"><rect x="20" y="200" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="242" fill="var(--fg)">CSRF double-submit token</text></g>
+      <g class="layer" data-layer="3"><rect x="20" y="290" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="332" fill="var(--fg)">CSP nonce · strict-dynamic</text></g>
+    </svg>
+    <div class="controls"><button aria-pressed="true" data-toggle="0">Host allowlist · 127.0.0.1 only</button><button aria-pressed="true" data-toggle="1">HttpOnly · SameSite=Strict cookie</button><button aria-pressed="true" data-toggle="2">CSRF double-submit token</button><button aria-pressed="true" data-toggle="3">CSP nonce · strict-dynamic</button></div>
+    <p class="cap">Toggle a layer off to see how much of the door it was holding. The attack only wins when every layer is off at once.</p>
+  </div>
+  <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">No single lock — a stack of independent ones: ephemeral port, a 32-byte token handed over once in the launcher URL and immediately swapped for an HttpOnly, SameSite=Strict cookie, a Host allowlist, a WS Origin check, CSRF double-submit, and a per-request CSP nonce.</p></div>
+  <p class="reveal">Each control guards a different way in, and none of them trusts the others to hold. The random high port keeps you off a guessable address. The token never lands in history or logs, because the first thing <span class="mono">/api/auth</span> does is redirect the <span class="mono">?k=</span> away and set a cookie instead. SameSite=Strict means that cookie won't ride along on a request a foreign page makes. If SameSite ever slipped, the CSRF double-submit still wants a header no cross-origin script can read. And the Host allowlist answers rebinding directly: rebind your domain to <span class="mono">127.0.0.1</span> all you like — the <span class="mono">Host</span> header still says <em>your</em> domain, so it's a 403. To get through, a page has to beat every layer at once, not just find the one you forgot.</p>
+  <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Why not put TLS on it and feel professional? Because HTTPS on <span class="mono">127.0.0.1</span> buys a self-signed-cert warning, Secure-cookie bookkeeping, and a maintenance tax — against no attacker it actually stops. The threat here isn't a wiretap on loopback; it's a hostile page in your own browser, and a certificate does nothing about that. mTLS is the same answer one size louder. Both were left out on purpose.</p></div></details>
+  <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">docs/SECURITY.md</li><li class="path">bin/codehelm</li><li class="path">lib/security/token.ts</li><li class="path">lib/security/host-check.ts</li><li class="path">lib/security/csrf.ts</li><li class="path">lib/security/csp.ts</li></ul>
+</section>
+
+<section class="scene" id="beat-path-guard">
+  <p class="beat-label reveal"><span class="nn">02</span><span class="sep">·</span><span>The path that escapes its root</span></p>
+  <h2 class="hook reveal">Every slug is a path you didn't write.</h2>
+  <p class="dim reveal">Project slugs, session ids, terminal working directories — they arrive as strings from the client and end up as filesystem paths under <span class="mono">~/.claude</span>. Treat them as trusted and a crafted slug walks straight out of the directory you meant to confine it to, into anything your account can read.</p>
+  <div class="trap reveal"><span class="lbl">The trap</span><p>So you check the prefix: does the resolved path start with the root? Root is <span class="mono">/home/bartek/.claude</span>, the request resolves under it, looks fine. Then someone asks for <span class="mono">/home/bartek/.claudeEVIL/secrets</span>. That <em>also</em> starts with <span class="mono">/home/bartek/.claude</span>. The prefix check waves it through, because string-prefix doesn't know where a directory boundary is.</p></div>
+  <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">Run <span class="mono">fs.realpath</span> to collapse every symlink first, then accept only when the resolved path equals the root exactly, or starts with the root plus the path separator.</p></div>
+  <p class="reveal">The separator is the whole trick. Comparing against <span class="mono">root + path.sep</span> means <span class="mono">.claudeEVIL</span> no longer matches — the next character after the root has to be a slash, so a sibling directory that merely shares a name prefix is rejected. And running <span class="mono">realpath</span> before the check means a symlink can't quietly point out of bounds after you've validated the string; you compare the real location, not the hopeful one. It's fuzzed with a hundred traversal payloads, and every endpoint that touches a path has to go through it — not as a guideline, as the only door.</p>
+  <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">lib/security/path-guard.ts</li><li class="path">docs/SECURITY.md</li></ul>
+</section>
+
+<section class="scene" id="beat-no-pty-sandbox">
+  <p class="beat-label reveal"><span class="nn">03</span><span class="sep">·</span><span>The sandbox you don't build</span></p>
+  <h2 class="hook reveal">The terminal runs anything. So sandbox it — right?</h2>
+  <p class="dim reveal">A tab in codehelm opens a real shell with your environment and your privileges. Read that sentence and the security reflex screams: wrap it. firejail, bubblewrap, a seccomp profile — put the PTY in a box so it can't touch the rest of the machine.</p>
+  <div class="trap reveal"><span class="lbl">The trap</span><p>The box feels like security while buying none. A sandbox around the shell would break the very things a shell is for — your paths, your env, the tools on your <span class="mono">PATH</span> — and it would do that to stop an attacker who, by the time they're running commands in your PTY, already <em>is</em> you. They own the account. The shell can't grant them more than they already have.</p></div>
+  <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">Don't sandbox the PTY. Draw the boundary at getting a command to run at all — the token, the cookie, the Origin and CSRF checks — and once a command runs, let it run as the user, because that's all it ever could be.</p></div>
+  <p class="reveal">Security is about where the boundary actually is, not where it feels reassuring. The real attacker in this threat model is a web page reaching for <span class="mono">127.0.0.1</span>, and every layer of the auth stack is aimed at that page. A firejail wrapper aims at a different attacker — one who already has shell access — and against that attacker it's theater: they could just open their own terminal. So the sandbox would cost real ergonomics every day to defend against nobody. The honest move is to say so out loud in the threat model and skip it.</p>
+  <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>What about a host that's already compromised — a keylogger, a hijacked Chrome profile? Also out of scope, and for the same reason: a local tool can't fix a machine whose owner has already lost it. codehelm assumes a clean host and defends the one boundary it can actually hold.</p></div></details>
+  <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">docs/SECURITY.md</li></ul>
+</section>
+
+<section class="scene" id="beat-single-server-ws">
+  <p class="beat-label reveal"><span class="nn">04</span><span class="sep">·</span><span>One server, two protocols</span></p>
+  <h2 class="hook reveal">Next can't hand you a raw socket.</h2>
+  <p class="dim reveal">The terminal needs a real, bidirectional byte stream — a WebSocket carrying PTY data both ways. The App Router gives you request/response route handlers; it has no seam for a raw <span class="mono">upgrade</span>. So the shell feature needs a transport Next doesn't expose.</p>
+  <div class="trap reveal"><span class="lbl">The trap</span><p>The easy answer is a second server: stand up a <span class="mono">ws</span> server on its own port next to Next, point the browser at it, done. Except now you have two front doors. Two ports to pin to <span class="mono">127.0.0.1</span>, two places to check the Origin, two auth paths that have to agree on the same cookie — and the day they drift, one of them is the hole.</p></div>
+  <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">One <span class="mono">http.Server</span>. Next's request handler takes the HTTP path; a custom <span class="mono">upgrade</span> router takes WebSockets, dispatching <span class="mono">/api/ws/pty</span>, <span class="mono">/api/ws/watch</span>, and Next's own HMR socket off the same listener.</p></div>
+  <p class="reveal">Collapsing it to a single server means there's exactly one thing to secure. One bind to lock to loopback, one Origin check on upgrade, one cookie that both HTTP and WS read the same way. The surface you have to reason about doesn't double — a WebSocket request goes through the same handshake auth as everything else, because it's literally the same server deciding. Fewer doors is fewer doors you can forget to lock.</p>
+  <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>A standalone <span class="mono">ws</span> process — or Socket.IO — would have been faster to wire up and is the default a lot of tutorials reach for. It was passed over because every byte of convenience there is paid back as a second auth surface, and the one asset worth protecting here is a process that can spawn shells.</p></div></details>
+  <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">server.ts</li><li class="path">lib/ws/server.ts</li><li class="path">lib/ws/pty-channel.ts</li><li class="path">docs/ARCHITECTURE.md</li></ul>
+</section>
+
+<section class="scene" id="beat-pty-backpressure">
+  <p class="beat-label reveal"><span class="nn">05</span><span class="sep">·</span><span>When the shell out-runs the browser</span></p>
+  <h2 class="hook reveal">Someone types <span class="mono">yes</span> and walks away.</h2>
+  <p class="dim reveal">A real PTY can produce output faster than a browser can render it. <span class="mono">yes</span>, <span class="mono">cat</span> on a huge file, a chatty build — the shell will happily emit megabytes a second. If every byte it produces is shoved onto the socket the instant it appears, the slowest link in the chain buffers the difference, and that buffer is your memory.</p>
+  <div class="trap reveal"><span class="lbl">The trap</span><p>Piping <span class="mono">pty.onData</span> straight to <span class="mono">ws.send</span> looks clean and works perfectly in the demo. Then a runaway command fills the server's send queue, or the browser's receive buffer, faster than it drains — and the unbounded middle grows until something falls over. The bug never shows up while you're typing <span class="mono">ls</span>; it shows up the one time output is infinite.</p></div>
+  <div class="diagram reveal">
+    <svg viewBox="0 0 600 290" role="img" aria-label="PTY backpressure — bounded by acknowledgement and caps">
+      <g class="layer" data-layer="0"><rect x="20" y="20" width="560" height="70" rx="0" fill="var(--accent)" stroke="var(--border)" stroke-width="2"/><text x="40" y="62" fill="var(--bg)">Client ACK every 64 kB consumed</text></g>
+      <g class="layer" data-layer="1"><rect x="20" y="110" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="152" fill="var(--fg)">Server pauses PTY at 1 MB unacked</text></g>
+      <g class="layer" data-layer="2"><rect x="20" y="200" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="242" fill="var(--fg)">16-PTY cap · 10 spawns/min</text></g>
+    </svg>
+    <div class="controls"><button aria-pressed="true" data-toggle="0">Client ACK every 64 kB consumed</button><button aria-pressed="true" data-toggle="1">Server pauses PTY at 1 MB unacked</button><button aria-pressed="true" data-toggle="2">16-PTY cap · 10 spawns/min</button></div>
+    <p class="cap">The first two layers bound memory under one loud command; the third bounds it under many small ones.</p>
+  </div>
+  <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">Flow control with a client ACK: the browser acknowledges every 64 kB it has actually consumed; the server pauses the PTY once 1 MB is in flight unacked and resumes when the client catches up — plus a hard cap of 16 concurrent PTYs and 10 spawns a minute.</p></div>
+  <p class="reveal">The ACK turns an open firehose into a loop that can only get as far ahead as the reader allows. When the browser falls behind, the unacked bytes pile up to 1 MB, the server stops reading from the PTY, and the operating system's own pipe backpressure does the rest — the noisy command blocks instead of the buffer growing. Memory stays bounded no matter what runs in the shell. The spawn cap and rate limit cover the other failure shape: not one loud command, but a buggy UI loop opening terminals until file descriptors run out.</p>
+  <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Dropping or truncating output when the client is slow would keep memory flat too — and silently corrupt the one thing a terminal must never lie about: what actually printed. Pausing the producer keeps every byte, in order, just slower.</p></div></details>
+  <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">lib/ws/pty-channel.ts</li><li class="path">lib/pty/manager.ts</li><li class="path">docs/SECURITY.md</li></ul>
+</section>
+
+<section class="scene" id="beat-persistent-tabs">
+  <p class="beat-label reveal"><span class="nn">06</span><span class="sep">·</span><span>Terminals that outlive the tab</span></p>
+  <h2 class="hook reveal">You reload, and your shell is gone.</h2>
+  <p class="dim reveal">A terminal lives in a React component. The natural lifecycle ties the PTY to that component: mount spawns it, unmount kills it. Which means the moment you reload the page, switch projects, or close the Chromium window, every shell dies — and so does the long <span class="mono">claude</span> run you left working inside it.</p>
+  <div class="trap reveal"><span class="lbl">The trap</span><p>Tying the PTY's life to the component's life is the obvious design, and it's the one that quietly loses your work. The terminal feels like the process, so it's tempting to let the UI own it. But the UI is the most disposable thing in the system — it re-renders, re-mounts, reloads. Anchor a half-hour agent run to a <span class="mono">&lt;div&gt;</span> and a stray refresh ends it.</p></div>
+  <div class="diagram reveal">
+    <svg viewBox="0 0 600 380" role="img" aria-label="Persistent tab — the PTY lives on the server, the browser is a viewport">
+      <g class="layer" data-layer="0"><rect x="20" y="20" width="560" height="70" rx="0" fill="var(--accent)" stroke="var(--border)" stroke-width="2"/><text x="40" y="62" fill="var(--bg)">Browser tab — just a viewport</text></g>
+      <g class="layer" data-layer="1"><rect x="20" y="110" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="152" fill="var(--fg)">WS attach by persistentId</text></g>
+      <g class="layer" data-layer="2"><rect x="20" y="200" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="242" fill="var(--fg)">Server-owned node-pty process</text></g>
+      <g class="layer" data-layer="3"><rect x="20" y="290" width="560" height="70" rx="0" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/><text x="40" y="332" fill="var(--fg)">persistent-tabs.json on disk</text></g>
+    </svg>
+    <div class="controls"><button aria-pressed="true" data-toggle="0">Browser tab — just a viewport</button><button aria-pressed="true" data-toggle="1">WS attach by persistentId</button><button aria-pressed="true" data-toggle="2">Server-owned node-pty process</button><button aria-pressed="true" data-toggle="3">persistent-tabs.json on disk</button></div>
+    <p class="cap">Toggle the top layer off — the browser can vanish and the process underneath keeps running. The disk layer is why it survives a restart.</p>
+  </div>
+  <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">The PTY lives on the server, not in the tab. On mount a terminal registers as a persistent PTY and writes the returned id into its pane; on reopen it re-attaches to that same process by id over the WebSocket. The roster lives in <span class="mono">~/.codehelm/persistent-tabs.json</span>, and on restart the server respawns every persistent tab before the UI connects.</p></div>
+  <p class="reveal">Flipping ownership makes the browser a viewport instead of a host. A reload doesn't kill anything — it reconnects to a process that never stopped. A project switch leaves your shells running. Even quitting and relaunching codehelm brings the tabs back, because their definitions outlived the process on disk. The component can come and go as often as React wants; the thing doing the work isn't in the component anymore.</p>
+  <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Persisting the full split-layout — which pane sat where — was deliberately deferred, and it's the honest rough edge: each pane registers as its own server tab, so after a reload a three-way split comes back as three separate top-level tabs. The documented path forward is a server-side <span class="mono">group_id</span> so panes rehydrate under one parent — a small schema change that survives any browser loading the same <span class="mono">~/.codehelm</span>. It's written down precisely because it isn't done yet.</p></div></details>
+  <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">docs/PERSISTENT-TABS.md</li><li class="path">lib/pty/persistent-tabs-store.ts</li><li class="path">lib/pty/persistent-tabs-service.ts</li><li class="path">app/(ui)/terminal/Terminal.tsx</li></ul>
+</section>
+
+<section class="scene" id="beat-cron-bracketed-paste">
+  <p class="beat-label reveal"><span class="nn">07</span><span class="sep">·</span><span>Cron that types for you</span></p>
+  <h2 class="hook reveal">A scheduled prompt fires while Claude is mid-sentence.</h2>
+  <p class="dim reveal">codehelm can schedule a prompt to land in a running <span class="mono">claude</span> tab — a daily research run, a nightly summary. But a terminal is a stream with no notion of "wait your turn." Fire your prompt at noon and Claude might be halfway through streaming an answer, or sitting in a fullscreen picker. Write into that and you don't send a prompt — you send keystrokes into the middle of something else.</p>
+  <div class="trap reveal"><span class="lbl">The trap</span><p>The naive scheduler does one thing: when the timer ticks, <span class="mono">pty.write</span> the prompt. It works in testing, because in testing the tab is always idle. In real use it pastes "summarise today" into the seventh line of a half-finished response, or into a menu that reads it as navigation. The prompt is technically delivered and practically garbage.</p></div>
+  <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">Gate the write on a ready-check, serialise it with a lock, deliver it as a paste. Cron fires only when Claude is at the input prompt — a marker match, or the tab idle for more than three seconds. An in-memory mutex per tab stops two jobs colliding, and the prompt goes in via bracketed paste — <span class="mono">ESC[200~ … ESC[201~</span> — so the terminal treats it as pasted text, not keys to interpret.</p></div>
+  <p class="reveal">Each piece closes a specific failure. The ready-check is the difference between typing into a prompt and typing into a response — without it, timing is pure luck. Bracketed paste tells the terminal "this is a block of pasted text," so a multi-line prompt isn't re-read line by line as commands or shortcuts. And the mutex handles the case the timer makes likely but rare: two jobs aimed at one tab in the same tick, which without a lock would interleave their bytes into nonsense. The result lands exactly as if you'd typed it — then codehelm steps back and doesn't read the reply.</p>
+  <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Capturing and parsing Claude's response — to know whether the job "worked" — was left out on purpose. It would mean scraping a streaming TUI and guessing where an answer starts and ends, a brittle parser chasing an interface that keeps changing. The job's contract stops at delivery: the prompt reached the prompt. What Claude does next is yours to read in the tab.</p></div></details>
+  <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">docs/CRON-JOBS.md</li><li class="path">lib/cron/executor.ts</li><li class="path">lib/cron/tab-lock.ts</li><li class="path">lib/pty/ready-check.ts</li></ul>
+</section>
+
+<section class="scene" id="beat-streaming-jsonl-virtualised">
+  <p class="beat-label reveal"><span class="nn">08</span><span class="sep">·</span><span>Opening a session that won't fit</span></p>
+  <h2 class="hook reveal">The session file is bigger than the screen will ever show.</h2>
+  <p class="dim reveal">A Claude session is a JSONL file that grows without a ceiling — thousands of events, every tool call and result, some of them enormous. The viewer has to open one and feel instant, on a file that might be tens of megabytes of text you'll only ever look at a few hundred lines of.</p>
+  <div class="trap reveal"><span class="lbl">The trap</span><p>Read the file, <span class="mono">JSON.parse</span> it, map every event to a component. It's three lines and it's correct, and it locks the tab for over a second on a big session while it parses everything and mounts two thousand DOM nodes you can't see. The cost scales with the file, not the screen — so the longer the conversation, the worse the first impression.</p></div>
+  <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">Stream the parse and virtualise the render. The file arrives as a <span class="mono">ReadableStream</span>, parsed event-by-event as bytes land, fed into react-virtuoso, which only ever mounts the rows on screen. Shiki loads lazily, per language, the first time a code block of that language appears.</p></div>
+  <p class="reveal">Decoupling work from file size is the whole move. Streaming means the first events render while the tail is still downloading — first byte on screen in under 50 ms instead of after a full parse. Virtualising means a 2000-message scroll holds above 30 fps, because the DOM carries a screenful, not a sessionful — scrolling swaps row contents instead of growing the tree. And lazy-loading Shiki per language means a session full of Python never pays to parse the TypeScript grammar it doesn't show. The viewer's cost tracks what you're looking at, not what the file weighs.</p>
+  <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">lib/jsonl/parser.ts</li><li class="path">docs/ARCHITECTURE.md</li><li class="path">PERFORMANCE.md</li></ul>
+</section>
+
+<section class="scene" id="beat-fs-watch-push">
+  <p class="beat-label reveal"><span class="nn">09</span><span class="sep">·</span><span>A conversation that updates while you read it</span></p>
+  <h2 class="hook reveal">Claude is writing to the file you're staring at.</h2>
+  <p class="dim reveal">The conversations codehelm shows aren't static — the <span class="mono">claude</span> CLI is appending to those JSONL files in real time, from outside the app entirely. Open a session that's actively running and the screen should grow with it, without you reaching for refresh. The data source is changing behind your back, on purpose.</p>
+  <div class="trap reveal"><span class="lbl">The trap</span><p>The reflex for "keep it fresh" is to poll: re-read the directory every couple of seconds, diff, update. It works and it's wasteful — constant filesystem reads to catch a change that happens occasionally, and you're always either too slow (long interval) or too busy (short one). Polling spends the most effort exactly when nothing is happening.</p></div>
+  <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">Watch, don't poll. A single chokidar watcher sits on <span class="mono">~/.claude/projects/</span>, debounced 200 ms per file; on a change it pushes a <span class="mono">session-updated</span> event over the WebSocket, and the open viewer attaches a streaming tail of just the new lines instead of reloading the whole file.</p></div>
+  <p class="reveal">An OS-level watch costs nothing until something actually changes, then fires within a debounce window — the opposite spend profile from polling. The 200 ms debounce coalesces the burst of writes the CLI makes into one event instead of a storm. And pushing a targeted "this session changed" lets the client be surgical: invalidate one query, or — if you're looking right at it — tail the new bytes onto the list you're already reading, so the conversation extends in place instead of flickering through a full reload.</p>
+  <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Polling on a timer was the alternative, and it's simpler to write. It was passed over because it inverts the cost: maximum work when idle, guaranteed lag when active. A watcher pays only for real change.</p></div></details>
+  <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">lib/watcher/chokidar.ts</li><li class="path">lib/ws/watch-channel.ts</li><li class="path">docs/ARCHITECTURE.md</li></ul>
+</section>
+
+<section class="scene" id="beat-prod-not-dev-launch">
+  <p class="beat-label reveal"><span class="nn">10</span><span class="sep">·</span><span>Twelve seconds to a quarter second</span></p>
+  <h2 class="hook reveal">The app booted in dev mode every single time.</h2>
+  <p class="dim reveal"><span class="mono">bin/codehelm</span> is the front door — find a port, mint a token, start the server, open Chromium. For a long time it started Next in dev mode without anyone deciding to. First paint took about twelve seconds, because every route compiled on its first hit, React ran with development checks, and the bundle shipped unminified. The launcher worked, so nobody looked at the clock.</p>
+  <div class="trap reveal"><span class="lbl">The trap</span><p>Shipping the dev server is the silent default — it runs, it's what you tested, and the cost hides until you measure it. The prod branch <em>existed</em>; it just spawned <span class="mono">node server.js</span> from the repo root, where no such file lives. So the broken fast path quietly fell through to the working slow one, and "it launches fine" covered for a 30× tax on every cold start.</p></div>
+  <div class="reveal-decision reveal"><span class="lbl">The decision</span><p class="choice">Make the launcher detect a real build. If <span class="mono">.next/BUILD_ID</span> is present, run <span class="mono">NODE_ENV=production tsx server.ts</span> against the prebuilt tree; if it's missing, fall back to dev with a warning explaining how to <span class="mono">pnpm build</span>. After health-check, pre-warm <span class="mono">/api/projects</span> and <span class="mono">/api/settings</span> so the first click isn't the first compile.</p></div>
+  <p class="reveal">The fix is mostly about refusing to guess. A build either exists on disk or it doesn't — <span class="mono">.next/BUILD_ID</span> is an honest marker, so the launcher picks prod when prod is actually available instead of hoping. Pointing the custom server at the prebuilt tree skips on-demand compilation entirely: first <span class="mono">GET /</span> drops from about 6.9 seconds to 234 milliseconds, <span class="mono">/api/projects</span> from 2.4 seconds to 56. Pre-warming the heavy routes after the health check spends idle startup time loading the PTY and JSONL modules, so they're warm before the window finishes painting. And dev stays one <span class="mono">--dev</span> flag away, because the goal was to stop defaulting to slow, not to forbid fast iteration.</p>
+  <details class="road reveal"><summary>Road not taken</summary><div class="body"><p>Auto-rebuilding when source changes was tempting and rejected. Detecting "is this build stale" correctly means walking the whole dependency graph, and getting it subtly wrong means serving yesterday's code while swearing it's fresh. An explicit <span class="mono">--build</span> flag is a sentence of friction in exchange for never lying about what's running.</p></div></details>
+  <ul class="evidence reveal"><li class="lbl">Evidence</li><li class="path">PERFORMANCE.md</li><li class="path">bin/codehelm</li><li class="path">docs/ARCHITECTURE.md</li></ul>
+</section>
+
+<!-- ============ CLOSING ============ -->
+<footer class="closing">
+  <p class="kicker">The pattern</p>
+  <p class="synthesis">The thread through all ten chapters is one instinct: put the boundary where the real risk is, and refuse the move that only feels safe. Stack independent locks instead of trusting one. Let the server own what matters and treat the browser as a view. Spend effort when something actually changes, not on a timer. Each decision is less a clever trick than a refusal to take the reassuring version that doesn't hold.</p>
+
+  <p class="block-lbl">Deliberately not done — and why</p>
+  <ul class="not-done">
+    <li><b>Split-layout persistence</b> — panes survive a reload as separate tabs; a server-side <span class="mono">group_id</span> grouping is designed but not built yet.</li>
+    <li><b>Capturing Claude's cron replies</b> — jobs deliver the prompt and stop; scraping a streaming TUI for results was judged too brittle to own.</li>
+    <li><b>TLS / mTLS on loopback</b> — no threat-model win for a <span class="mono">127.0.0.1</span> tool, and a self-signed cert is pure friction.</li>
+    <li><b>PTY sandboxing (firejail / bwrap)</b> — the shell already runs as you; a sandbox costs ergonomics to stop an attacker who'd already own the account.</li>
+    <li><b>Audit-log rotation</b> — every tab open appends a spawn entry and nothing prunes it yet; a size- or day-based policy is the noted follow-up.</li>
+    <li><b>SSR initial-data hydration</b> — the shell server-renders, then the client re-fetches projects; seeding TanStack Query would drop the round-trip.</li>
+  </ul>
+
+  <p class="block-lbl">Sources</p>
+  <ul class="closing-evidence">
+    <li class="path">docs/SECURITY.md</li>
+    <li class="path">docs/ARCHITECTURE.md</li>
+    <li class="path">docs/CRON-JOBS.md</li>
+    <li class="path">docs/PERSISTENT-TABS.md</li>
+    <li class="path">PERFORMANCE.md</li>
+    <li class="path">bin/codehelm</li>
+    <li class="path">server.ts</li>
+    <li class="path">lib/security/token.ts</li>
+    <li class="path">lib/security/host-check.ts</li>
+    <li class="path">lib/security/csrf.ts</li>
+    <li class="path">lib/security/csp.ts</li>
+    <li class="path">lib/security/path-guard.ts</li>
+    <li class="path">lib/ws/server.ts</li>
+    <li class="path">lib/ws/pty-channel.ts</li>
+    <li class="path">lib/ws/watch-channel.ts</li>
+    <li class="path">lib/pty/manager.ts</li>
+    <li class="path">lib/pty/persistent-tabs-store.ts</li>
+    <li class="path">lib/pty/persistent-tabs-service.ts</li>
+    <li class="path">lib/pty/ready-check.ts</li>
+    <li class="path">lib/cron/executor.ts</li>
+    <li class="path">lib/cron/tab-lock.ts</li>
+    <li class="path">lib/jsonl/parser.ts</li>
+    <li class="path">lib/watcher/chokidar.ts</li>
+    <li class="path">app/(ui)/terminal/Terminal.tsx</li>
+  </ul>
+
+  <p class="signoff num">Generated 2026-05-31 22:30 GMT+2 · v1.0.0</p>
+</footer>
+
+<script>
+  /* Theme toggle (vanilla, persisted). No transition on body — avoids the Chromium var() freeze bug. */
+  (function () {
+    var root = document.documentElement;
+    var bd = document.getElementById('t-dark');
+    var bl = document.getElementById('t-light');
+    var KEY = 'mc-theme';
+
+    function apply(theme) {
+      root.setAttribute('data-theme', theme);
+      var dark = theme === 'dark';
+      bd.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      bl.setAttribute('aria-pressed', dark ? 'false' : 'true');
+      try { localStorage.setItem(KEY, theme); } catch (e) {}
+    }
+
+    try {
+      var saved = localStorage.getItem(KEY);
+      if (saved === 'light' || saved === 'dark') apply(saved);
+    } catch (e) {}
+
+    bd.addEventListener('click', function () { apply('dark'); });
+    bl.addEventListener('click', function () { apply('light'); });
+  })();
+</script>
+
+<script>
+  /* Scroll-reveal (.reveal → .in once on enter) + reading-progress width.
+     html.js gates the hidden state, so no-JS / pre-JS keeps everything visible. */
+  (function () {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+    var bar = document.querySelector('.progress > i');
+    if (bar) addEventListener('scroll', function () {
+      var h = document.documentElement; var p = h.scrollTop / (h.scrollHeight - h.clientHeight || 1);
+      bar.style.width = (p * 100).toFixed(1) + '%';
+    }, { passive: true });
+  })();
+</script>
+
+<script>
+  /* Diagram layer toggle (explorable). Each .diagram .controls button carries
+     data-toggle="N" → flips .hidden on the matching layer [data-layer="N"] and
+     syncs its own aria-pressed. Vanilla, no deps; scoped per-diagram. */
+  (function () {
+    document.querySelectorAll('.diagram .controls button[data-toggle]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var diagram = btn.closest('.diagram');
+        if (!diagram) return;
+        var layer = diagram.querySelector('[data-layer="' + btn.getAttribute('data-toggle') + '"]');
+        if (!layer) return;
+        var on = !layer.classList.toggle('hidden');   // toggle returns true when class now present
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    });
+  })();
+</script>
+</body>
+</html>

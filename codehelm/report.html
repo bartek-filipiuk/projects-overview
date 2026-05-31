@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>codehelm · project data</title>
+<style>
+  /* ============ CANONICAL THEME BLOCK (source of truth) ============ */
+  :root {
+    --bg:#F5F0E8; --bg-soft:#EFE8D7; --surface:#FFFFFF; --fg:#0A0A0A;
+    --border:#000000; --line:rgba(0,0,0,.16); --dim:#5C5648;
+    --accent:#1A7A1A; --warn:#D97706;
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+    --maxw:1100px;
+    --c1:#1A7A1A; --c2:#0E6BA8; --c3:#B8336A; --c4:#D97706; --c5:#5E548E; --c6:#5C5648;
+  }
+  html[data-theme="dark"]{
+    --bg:#0B0B0B; --bg-soft:#141414; --surface:#161616; --fg:#EDEDE6;
+    --border:#EDEDE6; --line:rgba(255,255,255,.18); --dim:#8A8474;
+    --accent:#3FB950; --warn:#E8902E;
+    --c1:#3FB950; --c2:#4493D6; --c3:#D86A98; --c4:#E8902E; --c5:#9A8FD0; --c6:#8A8474;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);
+    font-feature-settings:"liga" 0,"calt" 0;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+  .card{border:2px solid var(--border);background:var(--surface);padding:18px;border-radius:0;}
+  .push{transition:transform 90ms linear,box-shadow 90ms linear;}
+  .push:hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 0 var(--border);}
+  .tag{display:inline-block;border:2px solid var(--border);background:var(--bg);padding:3px 9px;
+    font-size:12px;font-family:var(--mono);}
+  .tag.empty{border-style:dashed;color:var(--dim);}
+  .term{border:2px solid var(--border);background:var(--bg-soft);}
+  .term-bar{background:var(--fg);color:var(--bg);padding:7px 12px;font-size:11px;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;}
+  .term-body{padding:14px;}
+  .site-nav{display:flex;align-items:center;border-bottom:2px solid var(--border);position:sticky;
+    top:0;z-index:50;background:var(--bg);}
+  .site-nav .brand{padding:14px 16px;font-weight:700;}
+  .site-nav a{padding:14px 16px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;
+    border-left:2px solid var(--border);}
+  .site-nav a:hover,.site-nav a[aria-current="page"]{background:var(--fg);color:var(--bg);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  @media (prefers-reduced-motion:reduce){.push:hover{transform:none;box-shadow:none;}}
+
+  /* ============ REPORT LAYOUT ============ */
+  .num { font-variant-numeric: tabular-nums; }
+  .mono{background:var(--bg-soft);border:1px solid var(--line);padding:0 4px;color:var(--dim);}
+  .report-wrap {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 56px) clamp(20px, 4vw, 40px) 80px;
+  }
+
+  /* ============ HEADER ============ */
+  header.top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 40px;
+  }
+  .title {
+    font-size: clamp(34px, 5.6vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.0;
+    margin: 0 0 14px;
+  }
+  .title .prompt { color: var(--accent); margin-right: 8px; }
+  .subtitle {
+    color: var(--dim);
+    font-size: 13px;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 0;
+    align-items: center;
+  }
+  .subtitle .dot { color: var(--dim); margin: 0 9px; }
+
+  /* segmented theme toggle — brutalist */
+  .seg {
+    display: inline-flex;
+    border: 2px solid var(--border);
+    flex: none;
+  }
+  .seg button {
+    appearance: none;
+    border: 0;
+    border-left: 2px solid var(--border);
+    background: var(--bg);
+    color: var(--dim);
+    font: inherit;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  .seg button:first-child { border-left: 0; }
+  .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .seg button:hover { background: var(--fg); color: var(--bg); }
+
+  /* ============ SECTION SCAFFOLD ============ */
+  section { margin-top: 48px; }
+  .eyebrow {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--fg);
+    margin: 0 0 18px;
+  }
+  .eyebrow::before { content: "$"; color: var(--accent); }
+  .eyebrow .count {
+    color: var(--accent);
+    letter-spacing: .04em;
+  }
+  .eyebrow .rule {
+    flex: 1 1 auto;
+    height: 0;
+    border-top: 1px dashed var(--line);
+    transform: translateY(-3px);
+  }
+
+  /* ============ KPI ============ */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .kpi { padding: 22px 22px 20px; }
+  .kpi .v {
+    font-size: clamp(32px, 4.4vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .kpi.zero .v { color: var(--dim); }
+  .kpi .l {
+    margin-top: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .kpi .h {
+    margin-top: 8px;
+    font-size: 11px;
+    line-height: 1.4;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--dim);
+    opacity: 0.8;
+  }
+
+  /* ============ SUMMARY ============ */
+  .summary { padding: 0; }
+  .summary .term-body { padding: 26px 28px; }
+  .summary p {
+    margin: 0;
+    font-size: clamp(15px, 2vw, 17px);
+    line-height: 1.65;
+    color: var(--fg);
+    text-wrap: pretty;
+    max-width: 72ch;
+  }
+  .summary b { font-weight: 700; color: var(--accent); }
+
+  /* ============ TWO-COLUMN ============ */
+  .cols {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 44px;
+  }
+  .cols.even { grid-template-columns: 1fr 1fr; }
+
+  /* features */
+  .features { display: flex; flex-direction: column; }
+  .feature {
+    padding: 18px 0;
+    border-top: 1px dashed var(--line);
+  }
+  .feature:first-child { border-top: 0; padding-top: 0; }
+  .feature .name { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+  .feature .name::before { content: "› "; color: var(--accent); font-weight: 800; }
+  .feature .desc { color: var(--dim); font-size: 13.5px; margin-top: 4px; line-height: 1.5; }
+  .feature .ev {
+    margin-top: 9px;
+    font-size: 12px;
+    color: var(--dim);
+    line-height: 1.65;
+    word-break: break-word;
+  }
+
+  /* stack */
+  .stack-main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 18px;
+    margin-bottom: 18px;
+    border-bottom: 2px solid var(--border);
+  }
+  .stack-main .tag { font-size: 13px; padding: 6px 11px; }
+  .stack-main .tag small { color: var(--dim); font-size: 11px; margin-left: 5px; }
+  .stack-group + .stack-group { margin-top: 24px; }
+  .stack-group .gl {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 12px;
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* ============ ACTIVITY CHART ============ */
+  .panel { padding: 24px; }
+  .panel.tight { padding: 0; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .bar { fill: var(--accent); }
+  .bar.faint { fill: var(--dim); opacity: .5; }
+  .axis-line { stroke: var(--border); stroke-width: 2; }
+  .vlabel { fill: var(--dim); font-size: 11px; font-variant-numeric: tabular-nums; font-family: var(--mono); }
+  .vlabel.peak { fill: var(--accent); font-weight: 700; }
+  .dlabel { fill: var(--dim); font-size: 12px; font-family: var(--mono); }
+  .chart .empty-note { fill: var(--dim); font-size: 13px; font-family: var(--mono); }
+
+  /* ============ LANGUAGE DONUT ============ */
+  .donut-wrap { display: flex; align-items: center; gap: 44px; flex-wrap: wrap; }
+  .donut { flex: none; position: relative; width: 224px; height: 224px; }
+  .donut svg { width: 224px; height: 224px; transform: rotate(-90deg); }
+  .donut .track { fill: none; stroke: var(--line); }
+  .donut .seg { fill: none; stroke-linecap: butt; }
+  .donut-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .donut-center .big { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+  .donut-center .sm { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-top: 4px; }
+  .legend { flex: 1 1 280px; display: flex; flex-direction: column; gap: 2px; min-width: 240px; }
+  .leg {
+    display: grid;
+    grid-template-columns: 14px 1fr auto auto;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 0;
+    border-top: 1px dashed var(--line);
+    font-size: 14px;
+  }
+  .leg:first-child { border-top: 0; }
+  .leg .swatch { width: 12px; height: 12px; border: 1px solid var(--border); }
+  .leg .lname { color: var(--fg); }
+  .leg .lcount { color: var(--dim); font-variant-numeric: tabular-nums; font-size: 12.5px; }
+  .leg .lpct { color: var(--fg); font-variant-numeric: tabular-nums; font-weight: 700; min-width: 44px; text-align: right; }
+
+  /* docs secondary stat */
+  .docs-stat {
+    margin-top: 18px;
+    font-size: 12px;
+  }
+  .docs-stat .term-body { padding: 10px 14px; color: var(--dim); }
+  .docs-stat .term-body b { color: var(--fg); font-weight: 700; }
+  .docs-stat .prompt { color: var(--accent); font-weight: 700; margin-right: 6px; }
+
+  /* ============ TOP FILES ============ */
+  .files { display: flex; flex-direction: column; gap: 18px; }
+  .file .row1 {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+    font-size: 14px;
+  }
+  .file .path { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file .lines { color: var(--fg); font-variant-numeric: tabular-nums; flex: none; font-weight: 700; }
+  .file .lines span { color: var(--dim); font-weight: 400; }
+  .file .track {
+    margin-top: 8px;
+    height: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .file .fill { height: 100%; background: var(--accent); }
+
+  /* ============ SESSIONS ============ */
+  .sessions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .sess { padding: 22px 22px 20px; }
+  .sess .date { color: var(--accent); font-size: 13px; font-weight: 700; }
+  .sess .at { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; margin: 12px 0 14px; }
+  .sess .meta { color: var(--dim); font-size: 13px; line-height: 1.5; }
+  .sess .meta b { color: var(--fg); font-weight: 700; }
+
+  /* ============ COMMIT LOG ============ */
+  .log { max-height: 280px; overflow: auto; }
+  .log .term-body { padding: 6px 0; }
+  .log .line {
+    display: flex; gap: 16px;
+    padding: 7px 16px;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .log .line .d { color: var(--dim); flex: none; }
+  .log .line .s { color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log .line .s::before { content: "› "; color: var(--accent); }
+  .log .empty {
+    padding: 20px 16px;
+    font-size: 13px;
+    color: var(--dim);
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    margin-top: 64px;
+    padding-top: 22px;
+    border-top: 2px solid var(--border);
+    text-align: center;
+    color: var(--dim);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 860px) {
+    .cols, .cols.even { grid-template-columns: 1fr; gap: 36px; }
+    .sessions { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 680px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    header.top { flex-direction: column; }
+  }
+  @media (max-width: 420px) {
+    .kpis { grid-template-columns: 1fr; }
+    .sessions { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Project site">
+  <span class="brand">codehelm</span>
+  <a href="index.html" data-page="overview">Overview</a>
+  <a href="report.html" data-page="data" aria-current="page">Data</a>
+  <a href="course.html" data-page="course">Course</a>
+  <a href="security.html" data-page="security">Security</a>
+</nav>
+<div class="report-wrap">
+
+  <!-- 1. HEADER -->
+  <header class="top">
+    <div>
+      <h1 class="title"><span class="prompt">$</span>codehelm</h1>
+      <p class="subtitle num">
+        <span>Generated 2026-05-31 22:30 GMT+2</span>
+        <span class="dot">·</span><span>3 sessions</span>
+        <span class="dot">·</span><span>last commit 2026-04-24</span>
+      </p>
+    </div>
+    <div class="seg" role="group" aria-label="Color theme">
+      <button id="t-light" aria-pressed="true">Light</button>
+      <button id="t-dark" aria-pressed="false">Dark</button>
+    </div>
+  </header>
+
+  <!-- 2. KPI ROW -->
+  <div class="kpis">
+    <div class="card push kpi"><div class="v num">6h 26m</div><div class="l">Active tool time</div><div class="h">Time the agent spent running tools (edits, reads, commands) — not wall-clock.</div></div>
+    <div class="card push kpi"><div class="v num">42,889</div><div class="l">Lines of code</div><div class="h">Non-blank source lines across the codebase.</div></div>
+    <div class="card push kpi"><div class="v num">134</div><div class="l">Commits</div><div class="h">Git commits recorded (— if not a git repo).</div></div>
+    <div class="card push kpi"><div class="v num">8</div><div class="l">Features</div><div class="h">Distinct capabilities found, each backed by code evidence.</div></div>
+  </div>
+
+  <!-- 3. SUMMARY -->
+  <section>
+    <div class="summary term">
+      <div class="term-bar"><span>SUMMARY</span><span>readme.md</span></div>
+      <div class="term-body">
+        <p><b>codehelm</b> is a local-only web UI that manages Claude Code CLI sessions in one Chromium window, reading the ~/.claude/projects JSONL you already have and spawning real shells per tab. It streams session JSONL through a custom parser into a virtualised conversation viewer, multiplexes up to 16 node-pty terminals over an authenticated WebSocket, and schedules cron prompts into persistent server-side tabs. Everything runs in-process on 127.0.0.1 behind a one-shot token, CSRF double-submit, Host allowlist, and per-request CSP nonce.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. FEATURES + STACK -->
+  <section>
+    <div class="cols">
+      <div>
+        <p class="eyebrow">Features <span class="count">8</span><span class="rule"></span></p>
+        <div class="features">
+          <div class="feature"><div class="name">Multi-tab embedded terminal</div><div class="desc">Spawns up to 16 concurrent node-pty PTYs over a WebSocket, each tab with a 64KB ring buffer for re-attach across reloads.</div><div class="ev">lib/pty/manager.ts · lib/pty/spawn.ts · lib/ws/pty-channel.ts · app/(ui)/terminal/Terminal.tsx · stores/terminal-slice.ts</div></div>
+          <div class="feature"><div class="name">Session conversation viewer</div><div class="desc">Streams and parses session JSONL into 9 event types, rendering tool_use cards and Edit/Write diffs with search, filters, and outline over virtualised lists.</div><div class="ev">lib/jsonl/parser.ts · lib/jsonl/tool-pairs.ts · app/(ui)/conversation/Viewer.tsx · components/conversation/messages.tsx</div></div>
+          <div class="feature"><div class="name">Project and session discovery API</div><div class="desc">Reads ~/.claude/projects via Route Handlers, exposing projects, per-session metadata, aliases, and Markdown export endpoints.</div><div class="ev">app/api/projects/route.ts · app/api/projects/[slug]/sessions/route.ts · app/api/sessions/[id]/route.ts · app/api/sessions/[id]/export/route.ts · lib/jsonl/export-md.ts</div></div>
+          <div class="feature"><div class="name">Scheduled cron prompts</div><div class="desc">Binds cron expressions to persistent tabs and writes prompts into a live Claude PTY via croner, gated by a hybrid ready-check and per-tab mutex.</div><div class="ev">lib/cron/scheduler.ts · lib/cron/executor.ts · lib/cron/tab-lock.ts · lib/pty/ready-check.ts · app/jobs/JobsView.tsx</div></div>
+          <div class="feature"><div class="name">Persistent server-side tabs</div><div class="desc">Registers PTYs in a server-side store that auto-respawns at startup so tabs survive browser reload and process restart.</div><div class="ev">lib/pty/persistent-tabs-registry.ts · lib/pty/persistent-tabs-service.ts · lib/pty/persistent-tabs-store.ts · app/api/persistent-tabs/route.ts</div></div>
+          <div class="feature"><div class="name">Localhost security hardening</div><div class="desc">Enforces a one-shot token, CSRF double-submit, Host/Origin allowlist, per-request CSP nonce, and fs.realpath path-traversal guards on the 127.0.0.1 socket.</div><div class="ev">lib/security/host-check.ts · lib/security/csrf.ts · lib/security/token.ts · lib/security/csp.ts · lib/security/path-guard.ts · middleware.ts</div></div>
+          <div class="feature"><div class="name">Live filesystem updates</div><div class="desc">Watches ~/.claude/projects with chokidar and pushes project/session add/update events over WebSocket to invalidate TanStack Query caches.</div><div class="ev">lib/watcher/chokidar.ts · lib/ws/watch-channel.ts · hooks/use-watch.ts</div></div>
+          <div class="feature"><div class="name">CLAUDE.md markdown editor</div><div class="desc">Edits per-project and global CLAUDE.md in a CodeMirror 6 editor with markdown preview split, diff-before-save, and atomic write.</div><div class="ev">app/(ui)/editor/MarkdownEditor.tsx · lib/claude-md · app/api/claude-md/route.ts · hooks/use-claude-md.ts</div></div>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow">Stack<span class="rule"></span></p>
+        <div class="stack-main">
+          <span class="tag">framework<small>15.0.0</small></span>
+          <span class="tag">ui<small>19.0.0</small></span>
+          <span class="tag">node-pty<small>0.12.0</small></span>
+          <span class="tag">xterm.js<small>5.5.0</small></span>
+          <span class="tag">ws<small>8.18.0</small></span>
+          <span class="tag">watcher<small>4.0.1</small></span>
+          <span class="tag">cron<small>10.0.1</small></span>
+          <span class="tag">state<small>5.0.1</small></span>
+          <span class="tag">query<small>5.62.0</small></span>
+          <span class="tag">virtual<small>4.12.0</small></span>
+          <span class="tag">zod<small>3.23.8</small></span>
+          <span class="tag">tailwind<small>4.0.0</small></span>
+          <span class="tag">shiki<small>1.24.0</small></span>
+        </div>
+        <div class="stack-group">
+          <div class="gl">Production</div>
+          <div class="tags">
+            <span class="tag">@codemirror/commands 6.10.3</span>
+            <span class="tag">@codemirror/lang-markdown 6.3.0</span>
+            <span class="tag">@codemirror/state 6.5.0</span>
+            <span class="tag">@codemirror/theme-one-dark 6.1.2</span>
+            <span class="tag">@codemirror/view 6.35.0</span>
+            <span class="tag">@homebridge/node-pty-prebuilt-multiarch 0.12.0</span>
+            <span class="tag">@radix-ui/react-dialog 1.1.15</span>
+            <span class="tag">@radix-ui/react-popover 1.1.15</span>
+            <span class="tag">@radix-ui/react-scroll-area 1.2.10</span>
+            <span class="tag">@radix-ui/react-slot 1.2.4</span>
+            <span class="tag">@radix-ui/react-tooltip 1.2.8</span>
+            <span class="tag">@radix-ui/react-visually-hidden 1.2.4</span>
+            <span class="tag">@tanstack/react-query 5.62.0</span>
+            <span class="tag">@xterm/addon-canvas 0.7.0</span>
+            <span class="tag">@xterm/addon-fit 0.10.0</span>
+            <span class="tag">@xterm/addon-web-links 0.11.0</span>
+            <span class="tag">@xterm/addon-webgl 0.19.0</span>
+            <span class="tag">@xterm/xterm 5.5.0</span>
+            <span class="tag">chokidar 4.0.1</span>
+            <span class="tag">class-variance-authority 0.7.1</span>
+            <span class="tag">clsx 2.1.1</span>
+            <span class="tag">cmdk 1.1.1</span>
+            <span class="tag">croner 10.0.1</span>
+            <span class="tag">diff 7.0.0</span>
+            <span class="tag">lucide-react 1.8.0</span>
+            <span class="tag">next 15.0.0</span>
+            <span class="tag">pino 9.5.0</span>
+            <span class="tag">react 19.0.0</span>
+            <span class="tag">react-dom 19.0.0</span>
+            <span class="tag">react-markdown 9.0.1</span>
+            <span class="tag">react-resizable-panels 4.10.0</span>
+            <span class="tag">react-virtuoso 4.12.0</span>
+            <span class="tag">rehype-sanitize 6.0.0</span>
+            <span class="tag">shiki 1.24.0</span>
+            <span class="tag">sonner 2.0.7</span>
+            <span class="tag">tailwind-merge 3.5.0</span>
+            <span class="tag">tailwindcss 4.0.0</span>
+            <span class="tag">tw-animate-css 1.4.0</span>
+            <span class="tag">ws 8.18.0</span>
+            <span class="tag">zod 3.23.8</span>
+            <span class="tag">zustand 5.0.1</span>
+          </div>
+        </div>
+        <div class="stack-group">
+          <div class="gl">Dev</div>
+          <div class="tags">
+            <span class="tag">@eslint/eslintrc 3.2.0</span>
+            <span class="tag">@playwright/test 1.49.0</span>
+            <span class="tag">@tailwindcss/postcss 4.0.0</span>
+            <span class="tag">@testing-library/dom 10.4.1</span>
+            <span class="tag">@testing-library/react 16.3.2</span>
+            <span class="tag">@testing-library/user-event 14.6.1</span>
+            <span class="tag">@types/diff 7.0.0</span>
+            <span class="tag">@types/node 22.10.0</span>
+            <span class="tag">@types/react 19.0.0</span>
+            <span class="tag">@types/react-dom 19.0.0</span>
+            <span class="tag">@types/supertest 6.0.2</span>
+            <span class="tag">@types/ws 8.5.13</span>
+            <span class="tag">@vitest/ui 2.1.8</span>
+            <span class="tag">eslint 9.16.0</span>
+            <span class="tag">eslint-config-next 15.0.0</span>
+            <span class="tag">eslint-plugin-react-hooks 7.0.1</span>
+            <span class="tag">husky 9.1.7</span>
+            <span class="tag">jsdom 29.0.2</span>
+            <span class="tag">lint-staged 15.2.10</span>
+            <span class="tag">pino-pretty 13.0.0</span>
+            <span class="tag">prettier 3.4.0</span>
+            <span class="tag">supertest 7.0.0</span>
+            <span class="tag">tsx 4.19.0</span>
+            <span class="tag">typescript 5.7.0</span>
+            <span class="tag">vitest 2.1.8</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. ACTIVITY TIMELINE -->
+  <section>
+    <p class="eyebrow">Activity timeline<span class="rule"></span></p>
+    <div class="card panel chart">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Active tool time per session date">
+        <line class="axis-line" x1="24" y1="200" x2="736" y2="200"></line>
+        <rect class="bar" x="83.3" y="34.0" width="118.7" height="166.0"></rect>
+        <text class="vlabel peak" x="142.7" y="26.0" text-anchor="middle">6h16m</text>
+        <text class="dlabel" x="142.7" y="222" text-anchor="middle">2026-04-16</text>
+        <rect class="bar faint" x="320.7" y="197.0" width="118.7" height="3.0"></rect>
+        <text class="vlabel" x="380.0" y="189.0" text-anchor="middle">6m</text>
+        <text class="dlabel" x="380.0" y="222" text-anchor="middle">2026-04-19</text>
+        <rect class="bar faint" x="558.0" y="197.0" width="118.7" height="3.0"></rect>
+        <text class="vlabel" x="617.3" y="189.0" text-anchor="middle">4m</text>
+        <text class="dlabel" x="617.3" y="222" text-anchor="middle">2026-04-19</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 6a. LANGUAGE BREAKDOWN -->
+  <section>
+    <p class="eyebrow">Language breakdown<span class="rule"></span></p>
+    <div class="card panel">
+      <div class="donut-wrap">
+        <div class="donut">
+          <svg viewBox="0 0 180 180">
+            <circle class="track" cx="90" cy="90" r="70" stroke-width="26"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke="var(--c1)" stroke-width="26" stroke-dasharray="232.76 207.07" stroke-dashoffset="-0.00"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke="var(--c2)" stroke-width="26" stroke-dasharray="148.68 291.15" stroke-dashoffset="-232.76"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke="var(--c3)" stroke-width="26" stroke-dasharray="34.90 404.93" stroke-dashoffset="-381.43"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke="var(--c4)" stroke-width="26" stroke-dasharray="21.30 418.52" stroke-dashoffset="-416.33"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke="var(--c5)" stroke-width="26" stroke-dasharray="1.71 438.11" stroke-dashoffset="-437.63"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke="var(--c6)" stroke-width="26" stroke-dasharray="0.48 439.34" stroke-dashoffset="-439.34"></circle>
+          </svg>
+          <div class="donut-center">
+            <div class="big num">42,889</div>
+            <div class="sm">lines</div>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="leg"><span class="swatch" style="background:var(--c1)"></span><span class="lname">TypeScript</span><span class="lcount num">22,697</span><span class="lpct num">52.9%</span></div>
+          <div class="leg"><span class="swatch" style="background:var(--c2)"></span><span class="lname">Other</span><span class="lcount num">14,498</span><span class="lpct num">33.8%</span></div>
+          <div class="leg"><span class="swatch" style="background:var(--c3)"></span><span class="lname">Markdown</span><span class="lcount num">3,403</span><span class="lpct num">7.9%</span></div>
+          <div class="leg"><span class="swatch" style="background:var(--c4)"></span><span class="lname">CSS</span><span class="lcount num">2,077</span><span class="lpct num">4.8%</span></div>
+          <div class="leg"><span class="swatch" style="background:var(--c5)"></span><span class="lname">JSON</span><span class="lcount num">167</span><span class="lpct num">0.4%</span></div>
+          <div class="leg"><span class="swatch" style="background:var(--c6)"></span><span class="lname">JavaScript</span><span class="lcount num">47</span><span class="lpct num">0.1%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="docs-stat term">
+      <div class="term-body"><span class="prompt">$</span>docs — <b>3,403</b> Markdown lines across README, spec &amp; docs/</div>
+    </div>
+  </section>
+
+  <!-- 6b. TOP FILES -->
+  <section>
+    <p class="eyebrow">Top files <span class="count">10</span><span class="rule"></span></p>
+    <div class="card panel">
+      <div class="files">
+        <div class="file"><div class="row1"><span class="path">app/globals.css</span><span class="lines num">2,077<span> lines</span></span></div><div class="track"><div class="fill" style="width:100.0%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">components/conversation/messages.tsx</span><span class="lines num">659<span> lines</span></span></div><div class="track"><div class="fill" style="width:31.7%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">app/(ui)/terminal/Terminal.tsx</span><span class="lines num">556<span> lines</span></span></div><div class="track"><div class="fill" style="width:26.8%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">stores/terminal-slice.ts</span><span class="lines num">422<span> lines</span></span></div><div class="track"><div class="fill" style="width:20.3%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">app/(ui)/editor/MarkdownEditor.tsx</span><span class="lines num">402<span> lines</span></span></div><div class="track"><div class="fill" style="width:19.4%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">components/SettingsDialog.tsx</span><span class="lines num">377<span> lines</span></span></div><div class="track"><div class="fill" style="width:18.2%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">app/(ui)/conversation/Viewer.tsx</span><span class="lines num">365<span> lines</span></span></div><div class="track"><div class="fill" style="width:17.6%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">app/jobs/JobFormDialog.tsx</span><span class="lines num">350<span> lines</span></span></div><div class="track"><div class="fill" style="width:16.9%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">hooks/use-cron-jobs.ts</span><span class="lines num">345<span> lines</span></span></div><div class="track"><div class="fill" style="width:16.6%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">hooks/use-pty.ts</span><span class="lines num">332<span> lines</span></span></div><div class="track"><div class="fill" style="width:16.0%"></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. SESSIONS -->
+  <section>
+    <p class="eyebrow">Sessions <span class="count">3</span><span class="rule"></span></p>
+    <div class="sessions">
+      <div class="card push sess"><div class="date num">2026-04-16</div><div class="at">Edit</div><div class="meta"><b>2,078</b> tool calls<br><b>6h 16m</b> active</div></div>
+      <div class="card push sess"><div class="date num">2026-04-19</div><div class="at">Bash</div><div class="meta"><b>183</b> tool calls<br><b>5m 48s</b> active</div></div>
+      <div class="card push sess"><div class="date num">2026-04-19</div><div class="at">Bash</div><div class="meta"><b>39</b> tool calls<br><b>3m 46s</b> active</div></div>
+    </div>
+  </section>
+
+  <!-- 8. COMMIT LOG -->
+  <section>
+    <p class="eyebrow">Commit log<span class="rule"></span></p>
+    <div class="log term">
+      <div class="term-bar"><span>GIT LOG</span><span>--oneline</span></div>
+      <div class="term-body">
+        <div class="line"><span class="d num">04-24</span><span class="s">feat(term-head): live cwd and branch updates via head-info endpoint</span></div>
+        <div class="line"><span class="d num">04-19</span><span class="s">feat(tabs): editable restart command + auto-derive from resume aliasKey</span></div>
+        <div class="line"><span class="d num">04-19</span><span class="s">feat(ui): add focus mode toggle in main panel header</span></div>
+        <div class="line"><span class="d num">04-19</span><span class="s">fix(pty): RESTART now truly restarts the backing PTY for persistent tabs</span></div>
+        <div class="line"><span class="d num">04-19</span><span class="s">fix(pty): clean WS teardown on RESTART to stop duplicated output and frozen tabs</span></div>
+        <div class="line"><span class="d num">04-19</span><span class="s">text</span></div>
+        <div class="line"><span class="d num">04-19</span><span class="s">Merge pull request #12 from bartek-filipiuk/fix/tab-sync-reconcile</span></div>
+        <div class="line"><span class="d num">04-19</span><span class="s">Merge pull request #11 from bartek-filipiuk/docs/cron-readme</span></div>
+        <div class="line"><span class="d num">04-19</span><span class="s">fix(tabs): reconcile Zustand with server on every mount + auto-respawn on attach</span></div>
+        <div class="line"><span class="d num">04-19</span><span class="s">docs: cover scheduled prompts + persistent tabs in README</span></div>
+        <div class="line"><span class="d num">04-19</span><span class="s">Merge pull request #10 from bartek-filipiuk/feat/cron-prompt-injection</span></div>
+        <div class="line"><span class="d num">04-19</span><span class="s">fix(tabs): keep terminal open on project switch + preselect project on boot</span></div>
+        <div class="line"><span class="d num">04-19</span><span class="s">fix(tabs): eager persistent-tab hydration + default title on every new tab</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">feat(tabs): persist tab rename server-side so it survives reload</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">fix(pty): cross-graph-safe singletons for ptyManager + registry + cron</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">diag(tabs): log persistent-tab lifecycle + bump xterm scrollback</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">diag(pty): surface server-sent error codes in console + terminal</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">fix(build): mark node-pty + chokidar as serverExternalPackages</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">docs(tabs): document persistent tabs + known follow-ups</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">feat(tabs): promote project terminals to persistent PTYs by default</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">feat(cron): scheduled prompts to persistent Claude Code tabs</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">Merge pull request #9 from bartek-filipiuk/fix/terminal-split-cols-mismatch</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">fix(terminal): sync xterm/PTY cols in split panes, kill cursor-overwrite</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">Merge pull request #8 from bartek-filipiuk/feat/terminal-split-panes</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">fix(terminal): drop WebGL addon (v1) + clear resize timeout on unmount</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">perf(terminal): WebGL renderer with DOM fallback + refit on pane resize end</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">feat(terminal): LayoutPicker toolbar (1 / 1x2 / 2x1 / 2x2)</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">feat(terminal): PaneGrid + TabManager delegation + paneId rename</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">feat(terminal): persist split pane sizes per layout</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">feat(terminal): add split pane store ops (setLayout/closePane/activePane)</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">feat(terminal): add layout + panes to TerminalTab model</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">feat(deps): add react-resizable-panels + xterm addon-webgl</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">Merge pull request #7 from bartlomiej-filipiuk/fix/macos-support</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">fix(tests): resolve tmpdir symlinks for macOS compatibility</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">fix(scripts): drop --turbopack from build; run test suites sequentially</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">Merge pull request #6 from bartek-filipiuk/perf/prod-launcher</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">perf(launcher): run prod build by default + prewarm + Chromium flags</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">Merge pull request #5 from bartek-filipiuk/feat/editable-tab-title</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">feat(terminal): inline-rename tabs with persisted aliases</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">Merge pull request #4 from bartek-filipiuk/design/claude-design-v1</span></div>
+        <div class="line"><span class="d num">04-18</span><span class="s">feat(design): port Claude Design V1 + update Opus 4.7 pricing</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #3 from bartek-filipiuk/docs/design-brief</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">docs: add DESIGN_BRIEF.md for Claude Design hand-off</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #2 from bartek-filipiuk/docs/readme-banner-ascii-blocks</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">docs(readme): replace matrix banner with minimalist ASCII-block wordmark</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #1 from bartek-filipiuk/docs/readme-polish-codehelm-banner</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">docs(readme): refresh numbers, feature table, roadmap + new banner</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #15 from bartek-filipiuk/rebrand/claude-ui-to-codehelm</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">rebrand: claude-ui → codehelm</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #14 from bartek-filipiuk/fix/ci-integration-tests</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">fix(ci): run integration tests serially + accept Next 15 cache header</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #13 from bartek-filipiuk/feat/docs-english-sweep</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">docs: translate SECURITY, ARCHITECTURE, PHASE-0..7 to english</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #12 from bartek-filipiuk/feat/T28b-finalize-i18n</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T28 done (tests english + guard)</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(i18n): T28 full test suite sweep to english + extend guard</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #11 from bartek-filipiuk/feat/T24-T26-cross-platform</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T24 and T26 done</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(platform): T24 platform helpers + T26 claude-ui-install</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #10 from bartek-filipiuk/feat/T19-T23-terminal-cluster</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T19 and T23 done</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(terminal): T19 quick-actions + T23 git branch badge</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #9 from bartek-filipiuk/feat/i18n-complete-english-only</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(i18n): T27 + T29 + guard — english-only UI</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #8 from bartek-filipiuk/feat/T21-diff-before-save</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T21 done</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(editor): T21 diff-before-save modal in CLAUDE.md editor</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #7 from bartek-filipiuk/feat/T22-recent-claude-md-files</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T20 and T22 done</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(editor): T22 recent CLAUDE.md files dropdown</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #6 from bartek-filipiuk/feat/T20-parent-tool-use-popover</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #5 from bartek-filipiuk/feat/T28-translate-lib-comments</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(conversation): T20 parent tool_use popover on tool_result blocks</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(i18n): T28 translate Polish comments + ResizableColumns a11y to English</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #4 from bartek-filipiuk/feat/T18-project-grouping-by-path-prefix</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">style: run prettier over the repo</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T18 done</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(sidebar): T18 project grouping by path prefix</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T17 done</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(conversation): T17 timestamp display format</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T16 done</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(settings): T16 default event-category filters</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #2 from bartek-filipiuk/docs/rebrand-codehelm</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">docs: switch rebrand target from ptybook to codehelm</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">Merge pull request #1 from bartek-filipiuk/docs/platform-i18n-plan</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">docs: add cross-platform + english-only plan + T24-T29 queue</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: queue T16-T23 (perf-safe UX features)</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(ui): jump-to-event input + terminal clear/save buffer</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(ui): T15 replay mode — play/pause/scrub over session events</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(ui): remove conversation graph mode</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">fix(settings): split io.ts into pure types module for client imports</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T14 done</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(jsonl): T14 cost estimator</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T13 done</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(conversation): T13 conversation graph mode</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T12 done</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(ui): T12 toast notifications (shadcn Sonner)</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T11 done</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(editor): T11 markdown preview in CLAUDE.md editor</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T10 done</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(conversation): T10 diff-friendly tool_result for Edit/Write</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">chore: mark T09 done</span></div>
+        <div class="line"><span class="d num">04-17</span><span class="s">feat(conversation): T09 session stats bar</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">chore: mark T08 done</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(settings): T08 settings modal (fonts, density, theme)</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">chore: mark T07 done</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(ui): T07 session outline / minimap</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">chore: mark T06 done</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(ui): T06 command palette (Ctrl+K)</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">chore: mark T05 done</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(ui): T05 keyboard shortcuts overlay</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">chore: mark T04 done</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(sidebar): T04 sort toggle in sidebar</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">chore: mark T03 done</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(projects): T03 favorites and pin-to-top sidebar</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">chore: mark T02 done</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(layout): T02 resizable panel columns</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">chore: mark T01 done</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(jsonl): T01 resolve-cwd fallback for legacy projects</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">docs: add REBRANDING_PLAN.md for claude-ui → ptybook migration</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">docs: replace ASCII banner with generated image (flux-2-pro)</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">docs: rewrite README in English with tighter structure and principles</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">docs: README + TASKS queue for autonomous scheduler</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat: move project alias edit to session-list header + IMPROVEMENTPLAN</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(ui): always-visible alias pencil + viewer category filters</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat: content-block rendering + project aliases + wider sidebar + resume fix</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">fix: chromium --app compatibility + sniff cwd past huge hooks</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(editor): phase 7 — CLAUDE.md editor (CodeMirror 6)</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(watcher): phase 6 — file watcher + live updates</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(terminal): phase 5 — multi-tab + open-session-in-terminal</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(pty): phase 4 — WebSocket + node-pty + single terminal</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(ui): phase 3 — conversation viewer</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">feat(ui): phase 2 — sidebar + session explorer</span></div>
+        <div class="line"><span class="d num">04-16</span><span class="s">chore: bootstrap claude-ui (phases 0 + 1)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. FOOTER -->
+  <footer class="num">Generated 2026-05-31 22:30 GMT+2 · v1.0.0</footer>
+
+</div>
+
+<script>
+  /* Theme toggle (vanilla, persisted). Default light; restore from pd-theme. */
+  (function () {
+    var root = document.documentElement;
+    var bd = document.getElementById('t-dark');
+    var bl = document.getElementById('t-light');
+    var KEY = 'pd-theme';
+
+    function apply(theme) {
+      root.setAttribute('data-theme', theme);
+      var dark = theme === 'dark';
+      bd.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      bl.setAttribute('aria-pressed', dark ? 'false' : 'true');
+      try { localStorage.setItem(KEY, theme); } catch (e) {}
+    }
+
+    try {
+      var saved = localStorage.getItem(KEY);
+      if (saved === 'light' || saved === 'dark') apply(saved);
+    } catch (e) {}
+
+    bd.addEventListener('click', function () { apply('dark'); });
+    bl.addEventListener('click', function () { apply('light'); });
+  })();
+</script>
+</body>
+</html>

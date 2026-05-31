@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-05-31T22:30:00+02:00",
+  "generated_at_human": "2026-05-31 22:30 GMT+2",
+  "skill_version": "v1.0.0",
+  "project": "codehelm",
+  "project_slug": "claude-ui",
+  "inputs": {
+    "project_data": "reused",
+    "project_data_note": "report.html re-rendered from existing _raw.json into the current terminal-brutalist template (the cached report.html was from an older, incompatible design); data reused, render refreshed; rebranded to codehelm",
+    "masterclass": "generated",
+    "security": "absent"
+  },
+  "links": {
+    "live_url": null,
+    "repo_url": "https://github.com/bartek-filipiuk/codehelm"
+  },
+  "overview_sources": {
+    "idea": ".project-data/_raw.json:ai_generated.summary",
+    "stack_explained": ".project-data/_raw.json:code.stack (main derived from production/dev) + tech-glossary cache",
+    "why_stack": ".masterclass/_course.json:beats",
+    "value_points": ".project-data/_raw.json:ai_generated.features + claude-projects-manager-spec.md",
+    "glossary": "tech-glossary cache (sourced)"
+  },
+  "stack_knowledge": {
+    "tech_undefined": [],
+    "glossary_terms": ["pty", "jsonl", "backpressure", "bracketed paste"],
+    "cache_hits": ["next", "react", "tailwindcss"],
+    "cache_misses": ["node-pty", "xterm", "ws", "chokidar", "croner", "zustand", "react-query", "zod", "react-virtuoso", "shiki"]
+  },
+  "deep_links": [
+    { "beat_id": "single-server-ws", "href": "course.html#beat-single-server-ws", "from": "why-ws" },
+    { "beat_id": "pty-backpressure", "href": "course.html#beat-pty-backpressure", "from": "why-node-pty" },
+    { "beat_id": "cron-bracketed-paste", "href": "course.html#beat-cron-bracketed-paste", "from": "why-croner" },
+    { "beat_id": "fs-watch-push", "href": "course.html#beat-fs-watch-push", "from": "why-chokidar" },
+    { "beat_id": "streaming-jsonl-virtualised", "href": "course.html#beat-streaming-jsonl-virtualised", "from": "why-react-virtuoso" }
+  ],
+  "security": {
+    "source": "absent",
+    "no_security_audit": true
+  },
+  "flags": {
+    "thin_project": false,
+    "no_spec": false,
+    "empty_stack": false,
+    "no_security_audit": true,
+    "report_rerendered_from_raw": true,
+    "raw_stack_main_missing": true
+  }
+}
