@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>67projects.app · project data</title>
+<style>
+  /* ============ CANONICAL THEME BLOCK (source of truth) ============ */
+  :root {
+    --bg:#F5F0E8; --bg-soft:#EFE8D7; --surface:#FFFFFF; --fg:#0A0A0A;
+    --border:#000000; --line:rgba(0,0,0,.16); --dim:#5C5648;
+    --accent:#1A7A1A; --warn:#D97706;
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+    --maxw:1100px;
+    --c1:#1A7A1A; --c2:#0E6BA8; --c3:#B8336A; --c4:#D97706; --c5:#5E548E; --c6:#5C5648;
+  }
+  html[data-theme="dark"]{
+    --bg:#0B0B0B; --bg-soft:#141414; --surface:#161616; --fg:#EDEDE6;
+    --border:#EDEDE6; --line:rgba(255,255,255,.18); --dim:#8A8474;
+    --accent:#3FB950; --warn:#E8902E;
+    --c1:#3FB950; --c2:#4493D6; --c3:#D86A98; --c4:#E8902E; --c5:#9A8FD0; --c6:#8A8474;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);
+    font-feature-settings:"liga" 0,"calt" 0;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+  .card{border:2px solid var(--border);background:var(--surface);padding:18px;border-radius:0;}
+  .push{transition:transform 90ms linear,box-shadow 90ms linear;}
+  .push:hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 0 var(--border);}
+  .tag{display:inline-block;border:2px solid var(--border);background:var(--bg);padding:3px 9px;
+    font-size:12px;font-family:var(--mono);}
+  .tag.empty{border-style:dashed;color:var(--dim);}
+  .term{border:2px solid var(--border);background:var(--bg-soft);}
+  .term-bar{background:var(--fg);color:var(--bg);padding:7px 12px;font-size:11px;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;}
+  .term-body{padding:14px;}
+  .site-nav{display:flex;align-items:center;border-bottom:2px solid var(--border);position:sticky;
+    top:0;z-index:50;background:var(--bg);}
+  .site-nav .brand{padding:14px 16px;font-weight:700;}
+  .site-nav a{padding:14px 16px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;
+    border-left:2px solid var(--border);}
+  .site-nav a:hover,.site-nav a[aria-current="page"]{background:var(--fg);color:var(--bg);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  @media (prefers-reduced-motion:reduce){.push:hover{transform:none;box-shadow:none;}}
+
+  /* ============ REPORT LAYOUT ============ */
+  .num { font-variant-numeric: tabular-nums; }
+  .mono{background:var(--bg-soft);border:1px solid var(--line);padding:0 4px;color:var(--dim);}
+  .report-wrap {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 56px) clamp(20px, 4vw, 40px) 80px;
+  }
+
+  /* ============ HEADER ============ */
+  header.top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 40px;
+  }
+  .title {
+    font-size: clamp(34px, 5.6vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.0;
+    margin: 0 0 14px;
+  }
+  .title .prompt { color: var(--accent); margin-right: 8px; }
+  .subtitle {
+    color: var(--dim);
+    font-size: 13px;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 0;
+    align-items: center;
+  }
+  .subtitle .dot { color: var(--dim); margin: 0 9px; }
+
+  /* segmented theme toggle — brutalist */
+  .seg {
+    display: inline-flex;
+    border: 2px solid var(--border);
+    flex: none;
+  }
+  .seg button {
+    appearance: none;
+    border: 0;
+    border-left: 2px solid var(--border);
+    background: var(--bg);
+    color: var(--dim);
+    font: inherit;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  .seg button:first-child { border-left: 0; }
+  .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .seg button:hover { background: var(--fg); color: var(--bg); }
+
+  /* ============ SECTION SCAFFOLD ============ */
+  section { margin-top: 48px; }
+  .eyebrow {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--fg);
+    margin: 0 0 18px;
+  }
+  .eyebrow::before { content: "$"; color: var(--accent); }
+  .eyebrow .count {
+    color: var(--accent);
+    letter-spacing: .04em;
+  }
+  .eyebrow .rule {
+    flex: 1 1 auto;
+    height: 0;
+    border-top: 1px dashed var(--line);
+    transform: translateY(-3px);
+  }
+
+  /* ============ KPI ============ */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .kpi { padding: 22px 22px 20px; }
+  .kpi .v {
+    font-size: clamp(32px, 4.4vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .kpi.zero .v { color: var(--dim); }
+  .kpi .l {
+    margin-top: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .kpi .h {
+    margin-top: 8px;
+    font-size: 11px;
+    line-height: 1.4;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--dim);
+    opacity: 0.8;
+  }
+
+  /* ============ SUMMARY ============ */
+  .summary { padding: 0; }
+  .summary .term-body { padding: 26px 28px; }
+  .summary p {
+    margin: 0;
+    font-size: clamp(15px, 2vw, 17px);
+    line-height: 1.65;
+    color: var(--fg);
+    text-wrap: pretty;
+    max-width: 72ch;
+  }
+  .summary b { font-weight: 700; color: var(--accent); }
+
+  /* ============ TWO-COLUMN ============ */
+  .cols {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 44px;
+  }
+  .cols.even { grid-template-columns: 1fr 1fr; }
+
+  /* features */
+  .features { display: flex; flex-direction: column; }
+  .feature {
+    padding: 18px 0;
+    border-top: 1px dashed var(--line);
+  }
+  .feature:first-child { border-top: 0; padding-top: 0; }
+  .feature .name { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+  .feature .name::before { content: "› "; color: var(--accent); font-weight: 800; }
+  .feature .desc { color: var(--dim); font-size: 13.5px; margin-top: 4px; line-height: 1.5; }
+  .feature .ev {
+    margin-top: 9px;
+    font-size: 12px;
+    color: var(--dim);
+    line-height: 1.65;
+    word-break: break-word;
+  }
+
+  /* stack */
+  .stack-main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 18px;
+    margin-bottom: 18px;
+    border-bottom: 2px solid var(--border);
+  }
+  .stack-main .tag { font-size: 13px; padding: 6px 11px; }
+  .stack-main .tag small { color: var(--dim); font-size: 11px; margin-left: 5px; }
+  .stack-group + .stack-group { margin-top: 24px; }
+  .stack-group .gl {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 12px;
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* ============ ACTIVITY CHART ============ */
+  .panel { padding: 24px; }
+  .panel.tight { padding: 0; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .bar { fill: var(--accent); }
+  .bar.faint { fill: var(--dim); opacity: .5; }
+  .axis-line { stroke: var(--border); stroke-width: 2; }
+  .vlabel { fill: var(--dim); font-size: 11px; font-variant-numeric: tabular-nums; font-family: var(--mono); }
+  .vlabel.peak { fill: var(--accent); font-weight: 700; }
+  .dlabel { fill: var(--dim); font-size: 12px; font-family: var(--mono); }
+  .chart .empty-note { fill: var(--dim); font-size: 13px; font-family: var(--mono); }
+
+  /* ============ LANGUAGE DONUT ============ */
+  .donut-wrap { display: flex; align-items: center; gap: 44px; flex-wrap: wrap; }
+  .donut { flex: none; position: relative; width: 224px; height: 224px; }
+  .donut svg { width: 224px; height: 224px; transform: rotate(-90deg); }
+  .donut .track { fill: none; stroke: var(--line); }
+  .donut .seg { fill: none; stroke-linecap: butt; }
+  .donut-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .donut-center .big { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+  .donut-center .sm { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-top: 4px; }
+  .legend { flex: 1 1 280px; display: flex; flex-direction: column; gap: 2px; min-width: 240px; }
+  .leg {
+    display: grid;
+    grid-template-columns: 14px 1fr auto auto;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 0;
+    border-top: 1px dashed var(--line);
+    font-size: 14px;
+  }
+  .leg:first-child { border-top: 0; }
+  .leg .swatch { width: 12px; height: 12px; border: 1px solid var(--border); }
+  .leg .lname { color: var(--fg); }
+  .leg .lcount { color: var(--dim); font-variant-numeric: tabular-nums; font-size: 12.5px; }
+  .leg .lpct { color: var(--fg); font-variant-numeric: tabular-nums; font-weight: 700; min-width: 44px; text-align: right; }
+
+  /* docs secondary stat */
+  .docs-stat {
+    margin-top: 18px;
+    font-size: 12px;
+  }
+  .docs-stat .term-body { padding: 10px 14px; color: var(--dim); }
+  .docs-stat .term-body b { color: var(--fg); font-weight: 700; }
+  .docs-stat .prompt { color: var(--accent); font-weight: 700; margin-right: 6px; }
+
+  /* ============ TOP FILES ============ */
+  .files { display: flex; flex-direction: column; gap: 18px; }
+  .file .row1 {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+    font-size: 14px;
+  }
+  .file .path { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file .lines { color: var(--fg); font-variant-numeric: tabular-nums; flex: none; font-weight: 700; }
+  .file .lines span { color: var(--dim); font-weight: 400; }
+  .file .track {
+    margin-top: 8px;
+    height: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .file .fill { height: 100%; background: var(--accent); }
+
+  /* ============ SESSIONS ============ */
+  .sessions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .sess { padding: 22px 22px 20px; }
+  .sess .date { color: var(--accent); font-size: 13px; font-weight: 700; }
+  .sess .at { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; margin: 12px 0 14px; }
+  .sess .meta { color: var(--dim); font-size: 13px; line-height: 1.5; }
+  .sess .meta b { color: var(--fg); font-weight: 700; }
+
+  /* ============ COMMIT LOG ============ */
+  .log { max-height: 280px; overflow: auto; }
+  .log .term-body { padding: 6px 0; }
+  .log .line {
+    display: flex; gap: 16px;
+    padding: 7px 16px;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .log .line .d { color: var(--dim); flex: none; }
+  .log .line .s { color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log .line .s::before { content: "› "; color: var(--accent); }
+  .log .empty {
+    padding: 20px 16px;
+    font-size: 13px;
+    color: var(--dim);
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    margin-top: 64px;
+    padding-top: 22px;
+    border-top: 2px solid var(--border);
+    text-align: center;
+    color: var(--dim);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 860px) {
+    .cols, .cols.even { grid-template-columns: 1fr; gap: 36px; }
+    .sessions { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 680px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    header.top { flex-direction: column; }
+  }
+  @media (max-width: 420px) {
+    .kpis { grid-template-columns: 1fr; }
+    .sessions { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ SHARED TOP-NAV (injected by project-site) ============ -->
+<nav class="site-nav" aria-label="Project site">
+  <span class="brand">67projects.app</span>
+  <a href="index.html" data-page="overview">Overview</a>
+  <a href="report.html" data-page="data" aria-current="page">Data</a>
+  <a href="course.html" data-page="course">Course</a>
+  <a href="security.html" data-page="security">Security</a>
+</nav>
+<style class="site-nav-css">
+  .site-nav {
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--bg);
+    flex-wrap: wrap;
+  }
+  .site-nav .brand {
+    padding: 14px 16px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 38vw;
+  }
+  .site-nav a {
+    padding: 14px 16px;
+    font-size: 13px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    border-left: 2px solid var(--border);
+  }
+  .site-nav a:hover,
+  .site-nav a[aria-current="page"] {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  @media (max-width: 680px) {
+    .site-nav .brand { max-width: 28vw; }
+  }
+</style>
+
+<div class="report-wrap">
+
+  <!-- 1. HEADER -->
+  <header class="top">
+    <div>
+      <h1 class="title"><span class="prompt">$</span>67projects.app</h1>
+      <p class="subtitle num">
+        <span>Generated 2026-05-31 13:28 GMT+2</span>
+        <span class="dot">·</span><span>2 sessions</span>
+        <span class="dot">·</span><span>26 commits</span>
+      </p>
+    </div>
+    <div class="seg" role="group" aria-label="Color theme">
+      <button id="t-light" aria-pressed="true">Light</button>
+      <button id="t-dark" aria-pressed="false">Dark</button>
+    </div>
+  </header>
+
+  <!-- 2. KPI ROW -->
+  <div class="kpis">
+    <div class="card push kpi"><div class="v num">9min</div><div class="l">Active tool time</div><div class="h">Time the agent spent running tools (edits, reads, commands) — not wall-clock.</div></div>
+    <div class="card push kpi"><div class="v num">3,921</div><div class="l">Lines of code</div><div class="h">Non-blank source lines across the codebase.</div></div>
+    <div class="card push kpi"><div class="v num">26</div><div class="l">Commits</div><div class="h">Git commits recorded (— if not a git repo).</div></div>
+    <div class="card push kpi"><div class="v num">8</div><div class="l">Features detected</div><div class="h">Distinct capabilities found, each backed by code evidence.</div></div>
+  </div>
+
+  <!-- 3. SUMMARY -->
+  <section>
+    <div class="summary term">
+      <div class="term-bar"><span>SUMMARY</span><span>readme.md</span></div>
+      <div class="term-body">
+        <p>67projects.app is a production marketing and CMS site for Bartek's 67-day shipping challenge that serves the public site and an embedded Payload 3 admin panel from one Next.js 15 deploy, one Postgres database, and one set of generated types. It renders project, repo, and build-log pages from CMS-driven content in <span class="mono">collections/</span> and <span class="mono">globals/SiteSettings.ts</span>, streams a mock revenue feed over Server-Sent Events from <span class="mono">app/api/sales-stream/route.ts</span>, and ships a hardened request path with a per-request CSP nonce, Zod-validated env, rate-limited routes, and daily-rotated IP hashing.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. FEATURES + STACK -->
+  <section>
+    <div class="cols">
+      <div>
+        <p class="eyebrow">Features <span class="count">8</span><span class="rule"></span></p>
+        <div class="features">
+          <div class="feature"><div class="name">CMS-driven public site with no redeploy</div><div class="desc">Lets you edit projects, repos, build-log entries, and site copy in the Payload admin and see them live without shipping code.</div><div class="ev">collections/Projects.ts, globals/SiteSettings.ts, app/(frontend)/projects/[slug]/page.tsx</div></div>
+          <div class="feature"><div class="name">Instant edits via revalidation hooks</div><div class="desc">Pushes every admin save to the matching public route through afterChange/afterDelete hooks so changes appear immediately instead of waiting for a revalidate window.</div><div class="ev">lib/revalidate.ts, globals/SiteSettings.ts, collections/LogEntries.ts</div></div>
+          <div class="feature"><div class="name">Spam-resistant contact intake</div><div class="desc">Accepts contact messages only through a server action gated by a token-bucket rate limiter, a honeypot, and Zod validation, and rejects direct REST writes by design.</div><div class="ev">app/(frontend)/contact/actions.ts, lib/rate-limit.ts, collections/ContactSubmissions.ts</div></div>
+          <div class="feature"><div class="name">Strict CSP with per-request nonce</div><div class="desc">Hardens every page against injection by emitting a fresh nonce per request and a strict-dynamic script policy from middleware, with admin and static paths excluded.</div><div class="ev">middleware.ts</div></div>
+          <div class="feature"><div class="name">GDPR-minimal visitor tracking</div><div class="desc">Stores no raw IPs and sets no cookies — IPs are SHA-256 hashed with a daily-rotating salt, and analytics load only the self-hosted Umami tracker when configured.</div><div class="ev">lib/ip.ts, app/(frontend)/layout.tsx, lib/env.ts</div></div>
+          <div class="feature"><div class="name">Live revenue feed over SSE</div><div class="desc">Streams the homepage revenue log over Server-Sent Events with a stable encoder and heartbeat, so swapping the mock source for Stripe needs no client change.</div><div class="ev">app/api/sales-stream/route.ts, lib/revenue-stream.ts, components/home/RevenueLogStream.tsx</div></div>
+          <div class="feature"><div class="name">Cached, rate-limited GitHub stars</div><div class="desc">Serves open-source star counts from a per-repo route guarded by its own rate limiter and an in-memory LRU cache so the public GitHub limit is never hit.</div><div class="ev">app/api/github-stars/[owner]/[repo]/route.ts, lib/github.ts, lib/rate-limit.ts</div></div>
+          <div class="feature"><div class="name">Boot-safe migrate-and-seed deploy</div><div class="desc">Brings up a fresh container by waiting for Postgres, applying committed Payload migrations, running an idempotent seed, and ensuring an admin user before the server starts.</div><div class="ev">scripts/entrypoint.sh, migrations/20260510_104121_initial.ts</div></div>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow">Stack<span class="rule"></span></p>
+        <div class="stack-main">
+          <span class="tag">next <small>framework</small></span>
+          <span class="tag">react <small>framework</small></span>
+          <span class="tag">tailwindcss <small>styling</small></span>
+          <span class="tag">vitest <small>build/test</small></span>
+        </div>
+        <div class="stack-group">
+          <div class="gl">Production</div>
+          <div class="tags">
+            <span class="tag">@payloadcms/db-postgres ^3.81.0</span>
+            <span class="tag">@payloadcms/next ^3.81.0</span>
+            <span class="tag">@payloadcms/richtext-lexical ^3.81.0</span>
+            <span class="tag">@payloadcms/ui ^3.81.0</span>
+            <span class="tag">lru-cache ^11.0.0</span>
+            <span class="tag">next ^15.1.0</span>
+            <span class="tag">payload ^3.81.0</span>
+            <span class="tag">react ^19.0.0</span>
+            <span class="tag">react-dom ^19.0.0</span>
+            <span class="tag">tsx ^4.19.0</span>
+            <span class="tag">zod ^3.23.8</span>
+          </div>
+        </div>
+        <div class="stack-group">
+          <div class="gl">Dev</div>
+          <div class="tags">
+            <span class="tag">@axe-core/playwright ^4.10.0</span>
+            <span class="tag">@playwright/test ^1.48.0</span>
+            <span class="tag">@tailwindcss/postcss ^4.1.0</span>
+            <span class="tag">@types/node ^22.10.0</span>
+            <span class="tag">@types/react ^19.0.0</span>
+            <span class="tag">@types/react-dom ^19.0.0</span>
+            <span class="tag">@vitest/coverage-v8 ^2.1.0</span>
+            <span class="tag">babel-plugin-react-compiler ^1.0.0</span>
+            <span class="tag">eslint ^9.15.0</span>
+            <span class="tag">eslint-config-next ^15.1.0</span>
+            <span class="tag">eslint-plugin-security ^3.0.1</span>
+            <span class="tag">tailwindcss ^4.1.0</span>
+            <span class="tag">typescript ^5.7.0</span>
+            <span class="tag">vitest ^2.1.0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. ACTIVITY TIMELINE -->
+  <section>
+    <p class="eyebrow">Activity timeline<span class="rule"></span></p>
+    <div class="card panel chart">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Active tool time per session date">
+        <line class="axis-line" x1="24" y1="200" x2="736" y2="200"></line>
+        <rect class="bar" x="178.0" y="24" width="48" height="176" rx="0"></rect>
+        <text class="vlabel peak" x="202.0" y="16" text-anchor="middle">9m</text>
+        <text class="dlabel" x="202.0" y="223" text-anchor="middle">05-14</text>
+        <rect class="bar faint" x="534.0" y="197" width="48" height="3" rx="0"></rect>
+        <text class="vlabel" x="558.0" y="189" text-anchor="middle">9s</text>
+        <text class="dlabel" x="558.0" y="223" text-anchor="middle">05-31</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 6a. LANGUAGE BREAKDOWN -->
+  <section>
+    <p class="eyebrow">Language breakdown<span class="rule"></span></p>
+    <div class="card panel">
+      <div class="donut-wrap">
+        <div class="donut">
+          <svg viewBox="0 0 180 180">
+            <circle class="track" cx="90" cy="90" r="70" stroke-width="26"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke-width="26" stroke="var(--c1)" stroke-dasharray="424.23 15.59" stroke-dashoffset="-0.00"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke-width="26" stroke="var(--c2)" stroke-dasharray="9.65 430.17" stroke-dashoffset="-424.23"></circle>
+            <circle class="seg" cx="90" cy="90" r="70" stroke-width="26" stroke="var(--c3)" stroke-dasharray="5.95 433.87" stroke-dashoffset="-433.87"></circle>
+          </svg>
+          <div class="donut-center">
+            <div class="big num">3,921</div>
+            <div class="sm">lines</div>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="leg"><span class="swatch" style="background:var(--c1)"></span><span class="lname">TypeScript</span><span class="lcount">3,782</span><span class="lpct num">96%</span></div>
+          <div class="leg"><span class="swatch" style="background:var(--c2)"></span><span class="lname">CSS</span><span class="lcount">86</span><span class="lpct num">2%</span></div>
+          <div class="leg"><span class="swatch" style="background:var(--c3)"></span><span class="lname">JavaScript</span><span class="lcount">53</span><span class="lpct num">1%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="docs-stat term">
+      <div class="term-body"><span class="prompt">$</span>DOCS · 11 files · 706 lines</div>
+    </div>
+  </section>
+
+  <!-- 6b. TOP FILES -->
+  <section>
+    <p class="eyebrow">Top files <span class="count">10</span><span class="rule"></span></p>
+    <div class="card panel">
+      <div class="files">
+        <div class="file"><div class="row1"><span class="path">migrations/20260510_104121_initial.ts</span><span class="lines num">298<span> ln</span></span></div><div class="track"><div class="fill" style="width:100.0%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">globals/SiteSettings.ts</span><span class="lines num">167<span> ln</span></span></div><div class="track"><div class="fill" style="width:56.0%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">scripts/seed.ts</span><span class="lines num">134<span> ln</span></span></div><div class="track"><div class="fill" style="width:45.0%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">.../[slug]/page.tsx</span><span class="lines num">131<span> ln</span></span></div><div class="track"><div class="fill" style="width:44.0%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">lib/site-settings.ts</span><span class="lines num">127<span> ln</span></span></div><div class="track"><div class="fill" style="width:42.6%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">.../(frontend)/page.tsx</span><span class="lines num">126<span> ln</span></span></div><div class="track"><div class="fill" style="width:42.3%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">scripts/seed-fresh.ts</span><span class="lines num">113<span> ln</span></span></div><div class="track"><div class="fill" style="width:37.9%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">.../home/Hero.tsx</span><span class="lines num">112<span> ln</span></span></div><div class="track"><div class="fill" style="width:37.6%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">.../home/RevenueLogStream.tsx</span><span class="lines num">95<span> ln</span></span></div><div class="track"><div class="fill" style="width:31.9%"></div></div></div>
+        <div class="file"><div class="row1"><span class="path">app/globals.css</span><span class="lines num">86<span> ln</span></span></div><div class="track"><div class="fill" style="width:28.9%"></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. SESSIONS -->
+  <section>
+    <p class="eyebrow">Sessions <span class="count">2</span><span class="rule"></span></p>
+    <div class="sessions">
+      <div class="sess"><div class="date">2026-05-14</div><div class="at num">9min</div><div class="meta num">173 tool calls<br>top: <b>Bash</b></div></div>
+      <div class="sess"><div class="date">2026-05-31</div><div class="at num">9s</div><div class="meta num">20 tool calls<br>top: <b>Read</b></div></div>
+    </div>
+  </section>
+
+  <!-- 8. COMMIT LOG -->
+  <section>
+    <p class="eyebrow">Commit log<span class="rule"></span></p>
+    <div class="log term">
+      <div class="term-bar"><span>GIT LOG</span><span>--oneline</span></div>
+      <div class="term-body">
+        <div class="line"><span class="d">2026-05-14</span><span class="s">feat(analytics): self-hosted Umami tracker (stats.67projects.app) — gated &lt;Script&gt; w prod (NEXT_PUBLIC_UMAMI_SRC + WEBSITE_ID opcjonalne), CSP allowlist derived od env, brak cookies/DNT respected, TRACKER_SCRIPT_NAME=ascii.js bypass adblock</span></div>
+        <div class="line"><span class="d">2026-05-14</span><span class="s">docs(claude): initial CLAUDE.md — architecture, commands, security model, deployment dla future Claude Code sessions</span></div>
+        <div class="line"><span class="d">2026-05-11</span><span class="s">feat(cms): revalidatePath hooks na SiteSettings/Projects/Repos/LogEntries/Categories — zmiany w admin natychmiast widoczne na stronie (bez czekania na revalidate window)</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">chore(deploy): commit .coolify.env (UUIDs only, no secrets)</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">fix(deploy): entrypoint uses .bin/payload (not direct dist/bin) so tsx loader handles payload.config.ts</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">fix(deploy): pages render-resilient when DB unavailable at build time (try/catch + empty fallback) — fixes Coolify build failure</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat(deploy): production entrypoint (migrate + idempotent seed-fresh + admin), Dockerfile build-time args, .gitignore + .dockerignore for .coolify.env</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat(cms): rozszerzenie SiteSettings o branding (Hero, Sections, Footer, Contact, Branding tabs); lib/site-settings z fallback; podpięcie wszystkich komponentów pod CMS; Nav prompt linkuje do home + większy font; ChallengeGrid minmax(0,1fr) fix; Footer build timestamp stable</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">fix: Payload admin (RootLayout + serverFunction wiring), regenerated importMap, hydration mismatch in RevenueLogStream timestamp; .env script loading via tsx --env-file</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat: bundle JetBrains Mono v2.304 woff2 (Regular/Bold/ExtraBold) + OFL license; wire next/font/local in layout</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">fix(security): post-audit fixes — auth-001 (REST create lockdown), rate-001 (github limiter), upload-001 (size cap); SECURITY.md aligned with reality</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">fix(verify): typecheck + build fixes (importMap.d.ts, generateStaticParams resilience, sitemap fallback, slug regex disable, payload migrations)</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">docs: README + SECURITY.md + e2e test suites</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat(scripts): create-admin + idempotent seed (14 projects, 5 repos, 10 logs)</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat(security): CSP nonce middleware</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat(pages): home, projects list+detail, open-source, log, contact, sitemap, robots, error, not-found</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat(api): github-stars + sales-stream + ContactForm</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat(ui): cards, filter, home sections, checkout box</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat(ui): primitives + Nav + Footer</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat(payload): mount admin + REST API in app router</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat(payload): all collections + SiteSettings global + payload.config</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat(lib): TDD env, ascii, ip, validators, rate-limit, github, revenue-stream</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat: docker compose + healthcheck</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">test: vitest + playwright config</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">feat: next.js + tailwind v4 wiring with @theme tokens</span></div>
+        <div class="line"><span class="d">2026-05-10</span><span class="s">chore: bootstrap project skeleton</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. FOOTER -->
+  <footer class="num">Generated 2026-05-31 13:28 GMT+2 · v1.0.0</footer>
+
+</div>
+
+<script>
+  /* Theme toggle (vanilla, persisted). Default light; restore from pd-theme. */
+  (function () {
+    var root = document.documentElement;
+    var bd = document.getElementById('t-dark');
+    var bl = document.getElementById('t-light');
+    var KEY = 'pd-theme';
+
+    function apply(theme) {
+      root.setAttribute('data-theme', theme);
+      var dark = theme === 'dark';
+      bd.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      bl.setAttribute('aria-pressed', dark ? 'false' : 'true');
+      try { localStorage.setItem(KEY, theme); } catch (e) {}
+    }
+
+    try {
+      var saved = localStorage.getItem(KEY);
+      if (saved === 'light' || saved === 'dark') apply(saved);
+    } catch (e) {}
+
+    bd.addEventListener('click', function () { apply('dark'); });
+    bl.addEventListener('click', function () { apply('light'); });
+  })();
+</script>
+</body>
+</html>

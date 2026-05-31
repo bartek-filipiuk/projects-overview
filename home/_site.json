@@ -1,0 +1,59 @@
+{
+  "generated_at": "2026-05-31T13:31:00+02:00",
+  "generated_at_human": "2026-05-31 13:31 GMT+2",
+  "skill_version": "v1.2.0",
+  "project": "67projects.app",
+  "previous_site_overwritten": false,
+  "inputs": {
+    "project_data": "generated",
+    "masterclass": "generated",
+    "security": "verified-in-code"
+  },
+  "links": {
+    "live_url": "https://67projects.app",
+    "repo_url": null
+  },
+  "stack_knowledge": {
+    "tech_undefined": [],
+    "glossary_terms": ["Content Security Policy (CSP)", "nonce", "Server Action", "IP hashing"],
+    "cache_hits": ["next", "react", "tailwindcss", "vitest"],
+    "cache_misses": ["payload", "content security policy (csp)", "nonce", "server action", "ip hashing"]
+  },
+  "overview_sources": {
+    "idea": ".project-data/_raw.json#ai_generated.summary",
+    "stack_explained": ".project-data/_raw.json#code.stack.main (+ payload added from production deps — see flags)",
+    "stack_full": ".project-data/_raw.json#code.stack.production+dev (minus main)",
+    "value_points": ".project-data/_raw.json#ai_generated.features",
+    "why_stack": ".masterclass/_course.json beats (deep-dive, 6 beats)"
+  },
+  "deep_links": [
+    { "beat_id": "one-app-two-route-groups", "href": "course.html#beat-one-app-two-route-groups", "tech_crosslink": ["tech-next", "tech-payload"] },
+    { "beat_id": "csp-per-request-nonce", "href": "course.html#beat-csp-per-request-nonce", "tech_crosslink": [] },
+    { "beat_id": "ip-hashing-daily-salt", "href": "course.html#beat-ip-hashing-daily-salt", "tech_crosslink": [] },
+    { "beat_id": "env-validation-at-startup", "href": "course.html#beat-env-validation-at-startup", "tech_crosslink": [] }
+  ],
+  "security": {
+    "source": "verified-in-code",
+    "verified_total": 4,
+    "fixed": 3,
+    "documented": 1,
+    "partial": 0,
+    "open": 0,
+    "cannot_verify": 0,
+    "non_issues": 12,
+    "rejected": 0,
+    "flags": {
+      "no_security_audit": false,
+      "remediation_unverified": false,
+      "open_findings_redacted": false,
+      "audit_records_drift": false
+    },
+    "note": "auth-001 regression (ContactSubmissions create left open) was fixed in code on 2026-05-31 — collections/ContactSubmissions.ts:11 now reads `create: ({ req }) => req.payloadAPI === 'local'`, guarded by tests/unit/contact-submissions-access.test.ts. All 4 findings resolved (3 fixed in code + 1 documentation correction); security.html regenerated to the clean posture before deploy."
+  },
+  "flags": {
+    "thin_project": false,
+    "no_spec": true,
+    "empty_stack": false,
+    "main_stack_augmented_with_payload": true
+  }
+}

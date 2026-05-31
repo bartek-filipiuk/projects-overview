@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>67projects.app · security</title>
+<script>document.documentElement.classList.add('js')</script>
+<style>
+  /* ============ CANONICAL THEME BLOCK (source of truth — 1:1 with index.html) ============ */
+  :root {
+    --bg:#F5F0E8; --bg-soft:#EFE8D7; --surface:#FFFFFF; --fg:#0A0A0A;
+    --border:#000000; --line:rgba(0,0,0,.16); --dim:#5C5648;
+    --accent:#1A7A1A; --warn:#D97706;
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+    --maxw:1100px;
+    --crit:#B00020; --high:#D97706; --med:#B8336A; --low:#5C5648;
+  }
+  html[data-theme="dark"]{
+    --bg:#0B0B0B; --bg-soft:#141414; --surface:#161616; --fg:#EDEDE6;
+    --border:#EDEDE6; --line:rgba(255,255,255,.18); --dim:#8A8474;
+    --accent:#3FB950; --warn:#E8902E;
+    --crit:#FF6B6B; --high:#E8902E; --med:#D86A98; --low:#8A8474;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);
+    font-feature-settings:"liga" 0,"calt" 0;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,4vw,40px) 80px;}
+  section{margin-top:56px;}
+  .card{border:2px solid var(--border);background:var(--surface);padding:18px;border-radius:0;}
+  .tag{display:inline-block;border:2px solid var(--border);background:var(--bg);padding:3px 9px;
+    font-size:12px;font-family:var(--mono);}
+
+  /* ============ SHARED TOP-NAV (canonical brutalist — 1:1 with index.html) ============ */
+  .site-nav{display:flex;align-items:center;border-bottom:2px solid var(--border);position:sticky;
+    top:0;z-index:50;background:var(--bg);flex-wrap:wrap;}
+  .site-nav .brand{padding:14px 16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;max-width:38vw;}
+  .site-nav a{padding:14px 16px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;
+    border-left:2px solid var(--border);}
+  .site-nav a:hover,.site-nav a[aria-current="page"]{background:var(--fg);color:var(--bg);}
+  .site-nav .seg{margin-left:auto;display:inline-flex;border-left:2px solid var(--border);flex:none;}
+  .site-nav .seg button{appearance:none;border:0;border-left:2px solid var(--border);
+    background:var(--bg);color:var(--dim);font:inherit;font-family:var(--mono);font-size:12px;
+    font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:14px 14px;cursor:pointer;}
+  .site-nav .seg button:first-child{border-left:0;}
+  .site-nav .seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg);}
+  .site-nav .seg button:hover{background:var(--fg);color:var(--bg);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  /* ============ EYEBROW ============ */
+  .eyebrow{display:flex;align-items:baseline;gap:10px;font-size:12px;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--fg);margin:0 0 20px;}
+  .eyebrow::before{content:"$";color:var(--accent);}
+  .eyebrow .rule{flex:1 1 auto;height:0;border-top:1px dashed var(--line);transform:translateY(-3px);}
+
+  /* ============ HERO ============ */
+  header.hero{max-width:var(--maxw);margin:0 auto;
+    padding:clamp(48px,9vh,96px) clamp(20px,4vw,40px) clamp(28px,4vh,44px);}
+  .hero .kicker{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 20px;}
+  .hero .kicker::before{content:"$ ";}
+  .hero h1{font-family:var(--mono);font-size:clamp(34px,6vw,72px);font-weight:800;
+    letter-spacing:-0.03em;line-height:1.02;margin:0 0 22px;color:var(--fg);text-wrap:balance;}
+  .hero .lede{font-size:clamp(15px,2.2vw,20px);font-weight:400;line-height:1.5;color:var(--dim);
+    max-width:64ch;margin:0;text-wrap:pretty;}
+
+  /* ============ POSTURE BAND (severity stat cells + remediation bar) ============ */
+  .posture{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:2px solid var(--border);}
+  .stat{padding:18px;border-left:2px solid var(--border);}
+  .stat:first-child{border-left:0;}
+  .stat .n{font-size:clamp(28px,5vw,46px);font-weight:800;line-height:1;letter-spacing:-0.02em;}
+  .stat .l{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--dim);margin-top:8px;}
+  .stat.crit .n{color:var(--crit);} .stat.high .n{color:var(--high);}
+  .stat.med  .n{color:var(--med);}  .stat.low  .n{color:var(--low);}
+  .stat.zero .n{color:var(--accent);}            /* 0 of a serious severity reads as good */
+
+  .remed{margin-top:18px;border:2px solid var(--border);padding:16px 18px;background:var(--surface);}
+  .remed .head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  .remed .head b{font-size:14px;letter-spacing:.04em;text-transform:uppercase;}
+  .remed .head .frac{color:var(--dim);font-size:13px;font-variant-numeric:tabular-nums;}
+  .bar{margin-top:12px;height:18px;border:2px solid var(--border);background:var(--bg);position:relative;overflow:hidden;}
+  .bar > span{display:block;height:100%;background:var(--accent);width:100%;}
+  .meta-line{margin-top:14px;color:var(--dim);font-size:12px;font-variant-numeric:tabular-nums;}
+
+  /* ============ ASSURANCE (what we cleared) ============ */
+  .assure{border:2px solid var(--border);background:var(--bg-soft);padding:18px;}
+  .assure .big{font-size:15px;line-height:1.6;}
+  .assure .big b{color:var(--accent);}
+  details.cleared{margin-top:14px;}
+  details.cleared > summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);
+    border:2px solid var(--border);background:var(--bg);padding:7px 12px;user-select:none;}
+  details.cleared > summary::-webkit-details-marker{display:none;}
+  details.cleared > summary::before{content:"+ ";color:var(--accent);font-weight:800;}
+  details.cleared[open] > summary::before{content:"− ";}
+  details.cleared[open] > summary{margin-bottom:14px;}
+  .cleared ul{list-style:none;margin:0;padding:0;max-width:80ch;}
+  .cleared li{padding:10px 0;border-top:1px dashed var(--line);color:var(--fg);font-size:13px;line-height:1.5;}
+  .cleared li:first-child{border-top:0;}
+  .cleared li::before{content:"✓ ";color:var(--accent);font-weight:800;}
+  .cleared code{font-family:var(--mono);font-size:12px;background:var(--bg);padding:1px 5px;border:1px solid var(--line);}
+
+  /* ============ GLOSSARY (severity & categories) ============ */
+  .gloss{margin:0;max-width:80ch;}
+  .gloss > div{padding:11px 0;border-top:1px dashed var(--line);}
+  .gloss > div:first-child{border-top:0;padding-top:0;}
+  .gloss dt{font-size:13px;font-weight:800;color:var(--fg);}
+  .gloss dt .sev{margin-right:8px;}
+  .gloss dd{margin:5px 0 0;font-size:12.5px;line-height:1.5;color:var(--dim);}
+
+  /* ============ FINDINGS (before → after) ============ */
+  .findings{display:flex;flex-direction:column;gap:14px;}
+  .finding{border:2px solid var(--border);background:var(--surface);padding:0;}
+  .finding > .fhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;
+    border-bottom:2px solid var(--border);}
+  .finding > .fbody{padding:14px 16px;}
+  .sev{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    border:2px solid var(--border);padding:3px 8px;color:var(--bg);}
+  .sev.CRITICAL{background:var(--crit);} .sev.HIGH{background:var(--high);}
+  .sev.MEDIUM{background:var(--med);}     .sev.LOW{background:var(--low);}
+  .cat{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);}
+  .ftitle{flex:1 1 100%;font-size:15px;font-weight:700;line-height:1.35;margin:6px 0 0;text-wrap:pretty;}
+  .status{margin-left:auto;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+    border:2px solid var(--border);padding:3px 8px;}
+  .status.fixed{background:var(--accent);color:var(--bg);}
+  .status.partial{background:var(--warn);color:var(--bg);}
+  .status.open{background:var(--bg);color:var(--med);border-color:var(--med);}
+  .status.wont_fix{background:var(--bg);color:var(--dim);border-style:dashed;}
+  .status.cannot_verify{background:var(--bg);color:var(--dim);border-style:dashed;}
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:0;border:2px solid var(--border);margin-top:4px;}
+  .ba > div{padding:12px 14px;}
+  .ba > .after{border-left:2px solid var(--border);}
+  .ba .k{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:7px;}
+  .ba .k.before::before{content:"✗ ";color:var(--med);}
+  .ba .k.after::before{content:"✓ ";color:var(--accent);}
+  .ba p{margin:0;font-size:13px;line-height:1.55;color:var(--fg);}
+  .ba code{font-family:var(--mono);font-size:12px;background:var(--bg-soft);padding:1px 5px;border:1px solid var(--line);}
+  .redacted{margin-top:10px;color:var(--dim);font-size:12px;border-left:2px solid var(--warn);padding-left:10px;}
+  @media (max-width:680px){ .ba{grid-template-columns:1fr;} .ba > .after{border-left:0;border-top:2px solid var(--border);} }
+
+  /* ============ PROCESS NOTE ============ */
+  .process{border:2px solid var(--border);background:var(--surface);padding:18px;}
+  .process .t{font-size:15px;font-weight:800;margin:0 0 8px;}
+  .process .t::before{content:"› ";color:var(--accent);}
+  .process p{margin:0;color:var(--dim);font-size:14px;line-height:1.6;max-width:72ch;}
+
+  /* ============ FOOTER ============ */
+  footer{margin-top:72px;padding-top:22px;border-top:2px solid var(--border);text-align:center;
+    color:var(--dim);font-size:12px;font-variant-numeric:tabular-nums;}
+
+  @media (max-width:680px){
+    .posture{grid-template-columns:repeat(2,1fr);}
+    .stat:nth-child(3){border-left:0;}
+    .stat:nth-child(n+3){border-top:2px solid var(--border);}
+    .site-nav .brand{max-width:28vw;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ SHARED TOP-NAV (canonical brutalist, 4 links) ============ -->
+<nav class="site-nav" aria-label="Project site">
+  <span class="brand">67projects.app</span>
+  <a href="index.html" data-page="overview">Overview</a>
+  <a href="report.html" data-page="data">Data</a>
+  <a href="course.html" data-page="course">Course</a>
+  <a href="security.html" data-page="security" aria-current="page">Security</a>
+  <div class="seg" role="group" aria-label="Color theme">
+    <button id="t-light" aria-pressed="true">Light</button>
+    <button id="t-dark" aria-pressed="false">Dark</button>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <p class="kicker">Security &amp; remediation</p>
+  <h1>Audited — and every finding is resolved.</h1>
+  <p class="lede">Independently audited against OWASP Top&nbsp;10 and API Top&nbsp;10. All four verified findings are resolved — three fixed in code, one corrected in documentation — and twelve security areas were examined and cleared, with no false positives.</p>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ POSTURE BAND ============ -->
+  <section>
+    <p class="eyebrow">Posture<span class="rule"></span></p>
+    <div class="posture">
+      <div class="stat crit zero"><div class="n">0</div><div class="l">Critical</div></div>
+      <div class="stat high"><div class="n">1</div><div class="l">High</div></div>
+      <div class="stat med"><div class="n">2</div><div class="l">Medium</div></div>
+      <div class="stat low"><div class="n">1</div><div class="l">Low</div></div>
+    </div>
+    <div class="remed">
+      <div class="head"><b>Remediation</b><span class="frac">4 / 4 resolved — 3 fixed in code · 1 documented</span></div>
+      <div class="bar"><span></span></div>
+      <p class="meta-line">Audited 2026-05-10 · Standard Mode (OWASP Top 10 2021 + API Top 10 2023) · remediation re-verified in code 2026-05-31</p>
+    </div>
+  </section>
+
+  <!-- ============ WHAT WE CLEARED ============ -->
+  <section>
+    <p class="eyebrow">What we checked &amp; cleared<span class="rule"></span></p>
+    <div class="assure">
+      <p class="big"><b>12 security categories</b> examined and found secure — authentication, input validation, rate limiting, data exposure, transport headers, file upload, dependencies, cryptography, concurrency, business logic, logging and documentation accuracy. <b>No</b> reported issue turned out to be a false positive requiring rejection.</p>
+      <details class="cleared">
+        <summary>what was checked</summary>
+        <ul>
+          <li>Payload authentication: bcrypt password hashing, secure HttpOnly cookies, account lockout after repeated failures</li>
+          <li>Access control verified on every collection — public-read vs admin-write, admin-only reads where needed</li>
+          <li>No <code>dangerouslySetInnerHTML</code>, <code>eval</code> or raw HTML injection anywhere in custom code</li>
+          <li>All inputs validated with Zod before reaching the database or any outbound request</li>
+          <li>SQL injection not applicable — parameterized queries through the ORM</li>
+          <li>Strict security headers: HSTS preload, per-request CSP nonce, frame-deny, nosniff, locked permissions policy</li>
+          <li>IP addresses hashed with a daily-rotating salt — raw IPs are never stored</li>
+          <li>Generic error responses — no stack traces or internal paths leaked</li>
+          <li>Self-hosted fonts, no third-party analytics and no cookies</li>
+          <li>Dependencies clean at high and critical severity (<code>pnpm audit</code>)</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============ FINDINGS (before → after) ============ -->
+  <section>
+    <p class="eyebrow">Findings — before &amp; after<span class="rule"></span></p>
+    <div class="findings">
+
+      <div class="finding">
+        <div class="fhead">
+          <span class="sev HIGH">High</span>
+          <span class="cat">auth</span>
+          <span class="status fixed">Fixed</span>
+          <p class="ftitle">Access control on contact submissions</p>
+        </div>
+        <div class="fbody">
+          <div class="ba">
+            <div class="before"><div class="k before">Before</div><p>The contact-submissions collection accepted creates from any caller, so a direct API write could slip past the rate limit and IP-hashing that only the Server Action applies.</p></div>
+            <div class="after"><div class="k after">After</div><p>Create is now restricted to Payload's in-process Local API — the path the rate-limited Server Action uses — so public REST and GraphQL writes are rejected, with a regression test guarding against recurrence. <code>ContactSubmissions.ts:11</code></p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="fhead">
+          <span class="sev MEDIUM">Medium</span>
+          <span class="cat">rate-limit</span>
+          <span class="status fixed">Fixed</span>
+          <p class="ftitle">GitHub-stars endpoint was not rate-limited</p>
+        </div>
+        <div class="fbody">
+          <div class="ba">
+            <div class="before"><div class="k before">Before</div><p>The public GitHub-stars endpoint didn't apply its rate limiter, so a flood of requests for distinct repositories could slip past the cache and exhaust the upstream GitHub API quota.</p></div>
+            <div class="after"><div class="k after">After</div><p>The route now checks the limiter before doing any work and returns <code>429</code> with a <code>Retry-After</code> header once the limit is exceeded. <code>route.ts:19</code></p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="fhead">
+          <span class="sev MEDIUM">Medium</span>
+          <span class="cat">upload</span>
+          <span class="status fixed">Fixed</span>
+          <p class="ftitle">Media uploads had no enforced size limit</p>
+        </div>
+        <div class="fbody">
+          <div class="ba">
+            <div class="before"><div class="k before">Before</div><p>The media collection whitelisted file types but didn't enforce the documented 5&nbsp;MB ceiling, so an oversized image could strain disk and memory during processing.</p></div>
+            <div class="after"><div class="k after">After</div><p>A 5&nbsp;MB limit is now enforced in a <code>beforeChange</code> hook that rejects oversized files. <code>Media.ts:4,31</code></p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="fhead">
+          <span class="sev LOW">Low</span>
+          <span class="cat">docs-vs-reality</span>
+          <span class="status fixed">Documented</span>
+          <p class="ftitle">Documentation overstated file-validation controls</p>
+        </div>
+        <div class="fbody">
+          <div class="ba">
+            <div class="before"><div class="k before">Before</div><p>Security docs claimed magic-byte file validation that the implementation didn't perform — it trusted the client-supplied content type only.</p></div>
+            <div class="after"><div class="k after">After</div><p>The claim was corrected to match reality. Active controls are admin-only upload, a type whitelist and the 5&nbsp;MB cap; deep content validation is tracked as later hardening.</p></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ SEVERITY & CATEGORIES (glossary) ============ -->
+  <section>
+    <p class="eyebrow">Severity &amp; categories<span class="rule"></span></p>
+    <dl class="gloss">
+      <div><dt><span class="sev CRITICAL">Critical</span></dt><dd>Directly exploitable with severe impact (RCE, auth bypass, data loss). Must be fixed before anything ships.</dd></div>
+      <div><dt><span class="sev HIGH">High</span></dt><dd>Exploitable with serious impact; fix before launch.</dd></div>
+      <div><dt><span class="sev MEDIUM">Medium</span></dt><dd>A real weakness with limited or conditional impact; fix soon.</dd></div>
+      <div><dt><span class="sev LOW">Low</span></dt><dd>Minor or hard-to-exploit issue; defense-in-depth.</dd></div>
+      <div><dt>auth</dt><dd>Authentication &amp; authorization — who is allowed to do what.</dd></div>
+      <div><dt>rate-limit</dt><dd>Limits that stop abuse, brute-force and resource exhaustion.</dd></div>
+      <div><dt>upload</dt><dd>File-upload handling — type, size and storage.</dd></div>
+      <div><dt>docs-vs-reality</dt><dd>Where documented security claims don't match the code.</dd></div>
+    </dl>
+  </section>
+
+  <!-- ============ HOW THIS WAS DONE ============ -->
+  <section>
+    <p class="eyebrow">How this was done<span class="rule"></span></p>
+    <div class="process">
+      <p class="t">Found and fixed with a multi-agent security pipeline</p>
+      <p>Automated recon mapped every entry point; parallel per-category auditors probed for OWASP-class issues; and a deep-dive verifier re-checked each candidate to strip out false positives — none survived here. Test quality was reviewed alongside the code, and every fix shown on this page was re-verified against the current source when it was generated, with a regression test guarding the highest-impact fix.</p>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>Generated 2026-05-31 13:31 GMT+2 · v1.2.0</footer>
+
+</div>
+
+<script>
+  /* Theme toggle (vanilla, persisted). Default light; restore from ps-theme. Shared across project-site pages. */
+  (function () {
+    var root = document.documentElement;
+    var bd = document.getElementById('t-dark');
+    var bl = document.getElementById('t-light');
+    var KEY = 'ps-theme';
+    function apply(theme) {
+      root.setAttribute('data-theme', theme);
+      var dark = theme === 'dark';
+      bd.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      bl.setAttribute('aria-pressed', dark ? 'false' : 'true');
+      try { localStorage.setItem(KEY, theme); } catch (e) {}
+    }
+    try { var s = localStorage.getItem(KEY); if (s === 'light' || s === 'dark') apply(s); } catch (e) {}
+    bd.addEventListener('click', function () { apply('dark'); });
+    bl.addEventListener('click', function () { apply('light'); });
+  })();
+</script>
+</body>
+</html>

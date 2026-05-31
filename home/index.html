@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>67projects.app · overview</title>
+<script>document.documentElement.classList.add('js')</script>
+<style>
+  /* ============ CANONICAL THEME BLOCK (source of truth) ============ */
+  :root {
+    --bg:#F5F0E8; --bg-soft:#EFE8D7; --surface:#FFFFFF; --fg:#0A0A0A;
+    --border:#000000; --line:rgba(0,0,0,.16); --dim:#5C5648;
+    --accent:#1A7A1A; --warn:#D97706;
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+    --maxw:1100px;
+    --c1:#1A7A1A; --c2:#0E6BA8; --c3:#B8336A; --c4:#D97706; --c5:#5E548E; --c6:#5C5648;
+  }
+  html[data-theme="dark"]{
+    --bg:#0B0B0B; --bg-soft:#141414; --surface:#161616; --fg:#EDEDE6;
+    --border:#EDEDE6; --line:rgba(255,255,255,.18); --dim:#8A8474;
+    --accent:#3FB950; --warn:#E8902E;
+    --c1:#3FB950; --c2:#4493D6; --c3:#D86A98; --c4:#E8902E; --c5:#9A8FD0; --c6:#8A8474;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);
+    font-feature-settings:"liga" 0,"calt" 0;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+  .card{border:2px solid var(--border);background:var(--surface);padding:18px;border-radius:0;}
+  .push{transition:transform 90ms linear,box-shadow 90ms linear;}
+  .push:hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 0 var(--border);}
+  .tag{display:inline-block;border:2px solid var(--border);background:var(--bg);padding:3px 9px;
+    font-size:12px;font-family:var(--mono);}
+  .tag.empty{border-style:dashed;color:var(--dim);}
+  .term{border:2px solid var(--border);background:var(--bg-soft);}
+  .term-bar{background:var(--fg);color:var(--bg);padding:7px 12px;font-size:11px;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;}
+  .term-body{padding:14px;}
+  .site-nav{display:flex;align-items:center;border-bottom:2px solid var(--border);position:sticky;
+    top:0;z-index:50;background:var(--bg);}
+  .site-nav .brand{padding:14px 16px;font-weight:700;}
+  .site-nav a{padding:14px 16px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;
+    border-left:2px solid var(--border);}
+  .site-nav a:hover,.site-nav a[aria-current="page"]{background:var(--fg);color:var(--bg);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  @media (prefers-reduced-motion:reduce){.push:hover{transform:none;box-shadow:none;}}
+
+  /* ============ NAV THEME TOGGLE (segmented, brutalist) ============ */
+  .site-nav .seg { margin-left: auto; display: inline-flex; border-left: 2px solid var(--border); flex: none; }
+  .site-nav .seg button {
+    appearance: none; border: 0; border-left: 2px solid var(--border);
+    background: var(--bg); color: var(--dim);
+    font: inherit; font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: .04em; text-transform: uppercase; padding: 14px 14px; cursor: pointer;
+  }
+  .site-nav .seg button:first-child { border-left: 0; }
+  .site-nav .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .site-nav .seg button:hover { background: var(--fg); color: var(--bg); }
+  .site-nav .brand { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 38vw; }
+  /* local override (not in canonical block): let nav wrap so the toggle drops to a
+     second row on narrow screens (~375px) instead of causing horizontal overflow. */
+  .site-nav { flex-wrap: wrap; }
+
+  /* ============ LAYOUT SCAFFOLD ============ */
+  .wrap { padding: 0 clamp(20px, 4vw, 40px) 80px; }
+  section { margin-top: 56px; }
+  .eyebrow {
+    display: flex; align-items: baseline; gap: 10px;
+    font-size: 12px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--fg); margin: 0 0 20px;
+  }
+  .eyebrow::before { content: "$"; color: var(--accent); }
+  .eyebrow .rule { flex: 1 1 auto; height: 0; border-top: 1px dashed var(--line); transform: translateY(-3px); }
+
+  /* ============ HERO (big mono headline) ============ */
+  header.hero {
+    max-width: var(--maxw); margin: 0 auto;
+    padding: clamp(48px, 9vh, 96px) clamp(20px, 4vw, 40px) clamp(32px, 5vh, 56px);
+  }
+  .hero .kicker {
+    font-size: 12px; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 20px;
+  }
+  .hero .kicker::before { content: "$ "; }
+  .hero h1 {
+    font-family: var(--mono);
+    font-size: clamp(38px, 7vw, 84px); font-weight: 800;
+    letter-spacing: -0.03em; line-height: 1.0; margin: 0 0 26px;
+    color: var(--fg); text-wrap: balance; overflow-wrap: anywhere;
+  }
+  .hero .idea {
+    font-family: var(--mono);
+    font-size: clamp(16px, 2.4vw, 22px); font-weight: 400;
+    line-height: 1.5; color: var(--dim); max-width: 62ch; margin: 0; text-wrap: pretty;
+  }
+  /* live + repo links (optional, top of overview) */
+  .hero-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+  .hero-links .ext {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 2px solid var(--border); background: var(--surface);
+    padding: 8px 13px; font-size: 13px; font-weight: 700;
+    letter-spacing: .03em; text-transform: uppercase;
+  }
+  .hero-links .ext:hover { background: var(--fg); color: var(--bg); }
+  .hero-links .ext span { color: var(--accent); font-weight: 800; }
+  .hero-links .ext:hover span { color: var(--bg); }
+
+  /* ============ THE STACK, EXPLAINED (cards: what it is + role here) ============ */
+  .stack-explained {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px; padding-bottom: 22px; margin-bottom: 22px;
+    border-bottom: 2px solid var(--border);
+  }
+  .stack-card {
+    border: 2px solid var(--border); background: var(--surface); padding: 14px 16px;
+    display: flex; flex-direction: column;
+  }
+  .stack-card .sc-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 9px; }
+  .stack-card .sc-name { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; }
+  .stack-card .sc-cat { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+  .stack-card .sc-ver { font-size: 11px; color: var(--dim); margin-left: auto; font-variant-numeric: tabular-nums; }
+  .stack-card .sc-what { font-size: 13px; line-height: 1.55; color: var(--fg); margin: 0 0 10px; text-wrap: pretty; }
+  .stack-card .sc-what.muted { color: var(--dim); font-style: italic; }   /* degraded: no sourced definition */
+  .stack-card .sc-here { font-size: 12.5px; line-height: 1.5; color: var(--dim); margin: 0; }
+  .stack-card .sc-here b { color: var(--accent); font-weight: 700; }
+  .stack-card .sc-why {
+    margin-top: 10px; align-self: flex-start; font-size: 12px; font-weight: 700;
+    color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 1px;
+  }
+  .stack-card .sc-why:hover { background: var(--accent); color: var(--bg); }
+  .stack-card.empty { border-style: dashed; }
+  .stack-card.empty .sc-what { color: var(--dim); font-style: italic; }
+
+  /* ============ GLOSSARY (optional jargon defs) ============ */
+  .glossary { margin: 0; max-width: 80ch; }
+  .glossary > div { padding: 14px 0; border-top: 1px dashed var(--line); }
+  .glossary > div:first-child { border-top: 0; padding-top: 0; }
+  .glossary dt { font-size: 14px; font-weight: 800; color: var(--fg); }
+  .glossary dt::before { content: "› "; color: var(--accent); }
+  .glossary dd { margin: 6px 0 0; font-size: 13px; line-height: 1.55; color: var(--dim); }
+
+  /* full stack — secondary, collapsed under a details disclosure */
+  .stack-full { margin-top: 4px; }
+  .stack-full > summary {
+    cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--dim); border: 2px solid var(--border); background: var(--bg);
+    padding: 7px 12px; user-select: none;
+  }
+  .stack-full > summary::-webkit-details-marker { display: none; }
+  .stack-full > summary::before { content: "+ "; color: var(--accent); font-weight: 800; }
+  .stack-full[open] > summary::before { content: "− "; }
+  .stack-full > summary:hover { background: var(--fg); color: var(--bg); }
+  .stack-full[open] > summary { margin-bottom: 16px; }
+  .stack-group + .stack-group { margin-top: 20px; }
+  .stack-group .gl {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--dim); margin-bottom: 12px;
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tags .tag { font-size: 12px; padding: 4px 10px; }
+
+  /* ============ WHY-STACK CARDS ============ */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .why-card { display: flex; flex-direction: column; }
+  .why-card .choice {
+    font-family: var(--mono); font-size: 17px; font-weight: 800;
+    letter-spacing: -0.01em; line-height: 1.25; color: var(--fg);
+    margin: 0 0 10px; text-wrap: pretty;
+  }
+  .why-card .choice::before { content: "› "; color: var(--accent); }
+  .why-card .why {
+    color: var(--dim); font-size: 14px; line-height: 1.55;
+    margin: 0 0 16px; text-wrap: pretty;
+  }
+  .deep {
+    margin-top: auto; font-size: 13px; font-weight: 700;
+    color: var(--accent); text-decoration: none;
+    border-bottom: 2px solid var(--accent); padding-bottom: 1px;
+    align-self: flex-start;
+  }
+  .deep:hover { background: var(--accent); color: var(--bg); }
+  .deep:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .why-card .deep + .deep { margin-top: 8px; }
+  .why-note {
+    color: var(--dim); font-size: 14px; line-height: 1.6; max-width: 62ch; margin: 0;
+  }
+
+  /* ============ VALUE POINTS (What it gives you) ============ */
+  .value { list-style: none; margin: 0; padding: 0; max-width: 72ch; }
+  .value li {
+    padding: 16px 0; border-top: 1px dashed var(--line);
+    color: var(--fg); font-size: 15px; line-height: 1.55; text-wrap: pretty;
+  }
+  .value li:first-child { border-top: 0; padding-top: 0; }
+  .value li::before { content: "› "; color: var(--accent); font-weight: 800; }
+  .value li b { font-weight: 700; color: var(--accent); }
+
+  /* ============ DOORS (big link cards: Data + Course + Security) ============ */
+  .doors { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+  .door {
+    display: flex; flex-direction: column; justify-content: space-between;
+    min-height: 168px; padding: 28px 30px; text-decoration: none; color: var(--fg);
+  }
+  .door .dlbl {
+    font-size: 11px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--dim); margin: 0 0 14px;
+  }
+  .door .dlbl::before { content: "$ "; color: var(--accent); }
+  .door .dtitle {
+    font-family: var(--mono); font-size: clamp(26px, 3.4vw, 38px); font-weight: 800;
+    letter-spacing: -0.015em; line-height: 1.05; display: flex; align-items: center; gap: 12px;
+  }
+  .door .dtitle .arrow { color: var(--accent); transition: transform .18s ease; }
+  .door:hover .dtitle .arrow { transform: translateX(4px); }
+  .door .ddesc { color: var(--dim); font-size: 14px; line-height: 1.5; margin: 14px 0 0; }
+  /* disabled door (thin project — course unavailable). Not hidden: layout stays coherent. */
+  .door.disabled {
+    cursor: not-allowed; background: var(--bg-soft);
+    border-style: dashed; color: var(--dim); pointer-events: none;
+  }
+  .door.disabled:hover { transform: none; box-shadow: none; }
+  .door.disabled .dtitle { color: var(--dim); }
+  .door.disabled .dtitle .arrow { color: var(--dim); }
+  .door.disabled .ddesc { color: var(--dim); }
+
+  /* ============ FOOTER ============ */
+  footer {
+    margin-top: 72px; padding-top: 22px;
+    border-top: 2px solid var(--border); text-align: center;
+    color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 680px) {
+    .doors { grid-template-columns: 1fr; }
+    .site-nav .brand { max-width: 28vw; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ SHARED TOP-NAV (canonical brutalist) ============ -->
+<nav class="site-nav" aria-label="Project site">
+  <span class="brand">67projects.app</span>
+  <a href="index.html" data-page="overview" aria-current="page">Overview</a>
+  <a href="report.html" data-page="data">Data</a>
+  <a href="course.html" data-page="course">Course</a>
+  <a href="security.html" data-page="security">Security</a>
+  <div class="seg" role="group" aria-label="Color theme">
+    <button id="t-light" aria-pressed="true">Light</button>
+    <button id="t-dark" aria-pressed="false">Dark</button>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <p class="kicker">Project overview</p>
+  <h1>67projects.app</h1>
+  <p class="idea">A production marketing-and-CMS site for a 67-day shipping challenge: the public pages and an embedded Payload admin run from one Next.js deploy, one Postgres database and one shared set of types — behind a deliberately hardened request path.</p>
+  <div class="hero-links">
+    <a class="ext" href="https://67projects.app" target="_blank" rel="noopener noreferrer">Live site <span aria-hidden="true">↗</span></a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ THE STACK, EXPLAINED ============ -->
+  <section>
+    <p class="eyebrow">The stack, explained<span class="rule"></span></p>
+    <div class="stack-explained">
+      <div class="stack-card" id="tech-next">
+        <div class="sc-head">
+          <span class="sc-name">next</span>
+          <span class="sc-cat">framework</span>
+          <span class="sc-ver">15.1</span>
+        </div>
+        <p class="sc-what">A React framework for building full-stack web apps: you write the UI as React components and Next.js layers on routing, server and client rendering, and build optimizations. It auto-configures the lower-level tooling so you focus on the product instead of the setup.</p>
+        <p class="sc-here"><b>Here:</b> hosts the public site and the embedded Payload admin as two App Router route groups in one process.</p>
+        <a class="sc-why" href="#why-next">why this choice →</a>
+      </div>
+      <div class="stack-card" id="tech-react">
+        <div class="sc-head">
+          <span class="sc-name">react</span>
+          <span class="sc-cat">framework</span>
+          <span class="sc-ver">19.0</span>
+        </div>
+        <p class="sc-what">A JavaScript library for building user interfaces from small, isolated, reusable pieces called components. Components are functions that return markup, letting you compose everything from a single button to a full screen.</p>
+        <p class="sc-here"><b>Here:</b> renders every page as server and client components, with the React Compiler handling memoization automatically.</p>
+      </div>
+      <div class="stack-card" id="tech-payload">
+        <div class="sc-head">
+          <span class="sc-name">payload</span>
+          <span class="sc-cat">cms</span>
+          <span class="sc-ver">3.81</span>
+        </div>
+        <p class="sc-what">An open-source, code-first headless CMS and backend framework for Next.js, written in TypeScript. You define your content models in code and it generates an admin panel, database schema, REST and GraphQL APIs, authentication and file storage.</p>
+        <p class="sc-here"><b>Here:</b> the content layer — collections, globals and the /admin panel, read in-process by pages through its Local API.</p>
+        <a class="sc-why" href="#why-next">why this choice →</a>
+      </div>
+      <div class="stack-card" id="tech-tailwindcss">
+        <div class="sc-head">
+          <span class="sc-name">tailwindcss</span>
+          <span class="sc-cat">styling</span>
+          <span class="sc-ver">4.1</span>
+        </div>
+        <p class="sc-what">A utility-first CSS framework where you style elements by applying small predefined classes directly in your markup instead of writing custom CSS. It scans your templates and generates only the CSS you actually use, producing a small, optimized stylesheet.</p>
+        <p class="sc-here"><b>Here:</b> all styling via a CSS-first config in globals.css — there is no tailwind.config.js.</p>
+      </div>
+      <div class="stack-card" id="tech-vitest">
+        <div class="sc-head">
+          <span class="sc-name">vitest</span>
+          <span class="sc-cat">testing</span>
+          <span class="sc-ver">2.1</span>
+        </div>
+        <p class="sc-what">A fast testing framework powered by Vite that reuses your project's Vite config and transform pipeline, so tests run with the same setup as your app. It offers a Jest-compatible API plus watch mode, mocking, snapshots and coverage.</p>
+        <p class="sc-here"><b>Here:</b> unit and integration tests with a 90/85% coverage gate over lib and the API routes.</p>
+      </div>
+    </div>
+    <details class="stack-full">
+      <summary>full stack</summary>
+      <div class="stack-group">
+        <div class="gl">Production</div>
+        <div class="tags">
+          <span class="tag">@payloadcms/db-postgres 3.81.0</span>
+          <span class="tag">@payloadcms/next 3.81.0</span>
+          <span class="tag">@payloadcms/richtext-lexical 3.81.0</span>
+          <span class="tag">@payloadcms/ui 3.81.0</span>
+          <span class="tag">lru-cache 11.0.0</span>
+          <span class="tag">react-dom 19.0.0</span>
+          <span class="tag">tsx 4.19.0</span>
+          <span class="tag">zod 3.23.8</span>
+        </div>
+      </div>
+      <div class="stack-group">
+        <div class="gl">Dev</div>
+        <div class="tags">
+          <span class="tag">@axe-core/playwright 4.10.0</span>
+          <span class="tag">@playwright/test 1.48.0</span>
+          <span class="tag">@tailwindcss/postcss 4.1.0</span>
+          <span class="tag">@types/node 22.10.0</span>
+          <span class="tag">@types/react 19.0.0</span>
+          <span class="tag">@types/react-dom 19.0.0</span>
+          <span class="tag">@vitest/coverage-v8 2.1.0</span>
+          <span class="tag">babel-plugin-react-compiler 1.0.0</span>
+          <span class="tag">eslint 9.15.0</span>
+          <span class="tag">eslint-config-next 15.1.0</span>
+          <span class="tag">eslint-plugin-security 3.0.1</span>
+          <span class="tag">typescript 5.7.0</span>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ WHY THIS STACK ============ -->
+  <section>
+    <p class="eyebrow">Why this stack<span class="rule"></span></p>
+    <div class="why-grid">
+      <div class="why-card" id="why-next">
+        <p class="choice">One app, two route groups</p>
+        <p class="why">Payload 3 mounts inside the App Router, so there's no wire format to drift between frontend and API — and one deploy plus one database beats running two services for a solo build.</p>
+        <a class="deep" href="course.html#beat-one-app-two-route-groups">full decision in the course →</a>
+        <a class="deep" href="#tech-next">what is next ↑</a>
+        <a class="deep" href="#tech-payload">what is payload ↑</a>
+      </div>
+      <div class="why-card" id="why-csp">
+        <p class="choice">A fresh CSP nonce on every request</p>
+        <p class="why">Each request mints a one-time nonce, so injected inline scripts are rejected, while 'strict-dynamic' keeps Next's dynamic chunks working without 'unsafe-inline'.</p>
+        <a class="deep" href="course.html#beat-csp-per-request-nonce">full decision in the course →</a>
+      </div>
+      <div class="why-card" id="why-ip-hashing">
+        <p class="choice">IP hashing with a daily-rotating salt</p>
+        <p class="why">Visitor IPs are hashed under a salt that rotates daily, limiting correlation to the one-day window rate-limiting needs and making the small IPv4 space impractical to reverse — GDPR minimization by construction.</p>
+        <a class="deep" href="course.html#beat-ip-hashing-daily-salt">full decision in the course →</a>
+      </div>
+      <div class="why-card" id="why-env">
+        <p class="choice">Validate the whole environment before boot</p>
+        <p class="why">The entire environment is parsed through a Zod schema on first import and the process refuses to start on a bad value — silent misconfiguration becomes a loud, single-source-of-truth crash.</p>
+        <a class="deep" href="course.html#beat-env-validation-at-startup">full decision in the course →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WHAT IT GIVES YOU ============ -->
+  <section>
+    <p class="eyebrow">What it gives you<span class="rule"></span></p>
+    <ul class="value">
+      <li><b>Edit without redeploying</b> — projects, repos and the build log are CMS-driven and go live through revalidation hooks the moment you save.</li>
+      <li><b>Spam-resistant by design</b> — the contact form funnels through one rate-limited, IP-hashed Server Action; direct API writes to it are closed off.</li>
+      <li><b>Hardened by default</b> — a per-request CSP nonce, strict transport headers and Zod-validated env are part of the request path, not an afterthought.</li>
+      <li><b>Privacy-minimal</b> — visitor IPs are hashed with a daily-rotating salt, and there are no third-party cookies or analytics.</li>
+      <li><b>Boot-safe deploys</b> — the container migrates, seeds and ensures an admin on startup, so a fresh environment comes up correct or refuses to start.</li>
+    </ul>
+  </section>
+
+  <!-- ============ GLOSSARY (optional — empty string when no jargon terms) ============ -->
+  <section>
+    <p class="eyebrow">Glossary<span class="rule"></span></p>
+    <dl class="glossary">
+      <div><dt>Content Security Policy (CSP)</dt><dd>A browser security layer, sent as an HTTP header, that restricts which scripts, styles and other resources a page is allowed to load.</dd></div>
+      <div><dt>nonce</dt><dd>A single-use random token; here it marks the page's own scripts so the browser runs them and blocks any injected ones.</dd></div>
+      <div><dt>Server Action</dt><dd>A Next.js function that runs on the server but is called straight from the UI, with no separate API endpoint to expose or secure.</dd></div>
+      <div><dt>IP hashing</dt><dd>Storing a one-way fingerprint of a visitor's IP address instead of the address itself, so it cannot be reversed to the original.</dd></div>
+    </dl>
+  </section>
+
+  <!-- ============ THREE DOORS ============ -->
+  <section class="doors">
+    <a class="card push door" href="report.html">
+      <p class="dlbl">The numbers</p>
+      <span class="dtitle">Data <span class="arrow" aria-hidden="true">&rarr;</span></span>
+      <p class="ddesc">LOC, work time, sessions, languages and the full file breakdown.</p>
+    </a>
+    <a class="card push door" href="course.html">
+      <p class="dlbl">Why it's built this way</p>
+      <span class="dtitle">Course <span class="arrow" aria-hidden="true">&rarr;</span></span>
+      <p class="ddesc">A cinematic walkthrough of the "why" — architectural decisions, the traps they avoid, and the roads not taken.</p>
+    </a>
+    <a class="card push door" href="security.html">
+      <p class="dlbl">Audited &amp; remediated</p>
+      <span class="dtitle">Security <span class="arrow" aria-hidden="true">&rarr;</span></span>
+      <p class="ddesc">What was found and what's fixed — severity posture and before→after remediation.</p>
+    </a>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="num">Generated 2026-05-31 13:31 GMT+2 · v1.2.0</footer>
+
+</div>
+
+<script>
+  /* Theme toggle (vanilla, persisted). Default light; restore from ps-theme. */
+  (function () {
+    var root = document.documentElement;
+    var bd = document.getElementById('t-dark');
+    var bl = document.getElementById('t-light');
+    var KEY = 'ps-theme';
+
+    function apply(theme) {
+      root.setAttribute('data-theme', theme);
+      var dark = theme === 'dark';
+      bd.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      bl.setAttribute('aria-pressed', dark ? 'false' : 'true');
+      try { localStorage.setItem(KEY, theme); } catch (e) {}
+    }
+
+    try {
+      var saved = localStorage.getItem(KEY);
+      if (saved === 'light' || saved === 'dark') apply(saved);
+    } catch (e) {}
+
+    bd.addEventListener('click', function () { apply('dark'); });
+    bl.addEventListener('click', function () { apply('light'); });
+  })();
+</script>
+</body>
+</html>
