@@ -93,24 +93,51 @@
     font-size: clamp(16px, 2.4vw, 22px); font-weight: 400;
     line-height: 1.5; color: var(--dim); max-width: 62ch; margin: 0; text-wrap: pretty;
   }
-  .hero .live { margin: 24px 0 0; font-size: 15px; }
+  /* live + repo links (optional, top of overview) */
+  .hero-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+  .hero-links .ext {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 2px solid var(--border); background: var(--surface);
+    padding: 8px 13px; font-size: 13px; font-weight: 700;
+    letter-spacing: .03em; text-transform: uppercase;
+  }
+  .hero-links .ext:hover { background: var(--fg); color: var(--bg); }
+  .hero-links .ext span { color: var(--accent); font-weight: 800; }
+  .hero-links .ext:hover span { color: var(--bg); }
 
-  /* ============ STACK AT A GLANCE ============ */
-  /* main stack — prominent, larger bordered chips */
-  .stack-main {
-    display: flex; flex-wrap: wrap; gap: 10px;
-    padding-bottom: 22px; margin-bottom: 22px;
+  /* ============ THE STACK, EXPLAINED (cards: what it is + role here) ============ */
+  .stack-explained {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px; padding-bottom: 22px; margin-bottom: 22px;
     border-bottom: 2px solid var(--border);
   }
-  .stack-main .tag {
-    font-size: 14px; font-weight: 700; padding: 9px 14px;
-    background: var(--surface);
+  .stack-card {
+    border: 2px solid var(--border); background: var(--surface); padding: 14px 16px;
+    display: flex; flex-direction: column;
   }
-  .stack-main .tag small {
-    color: var(--dim); font-size: 11px; font-weight: 400;
-    margin-left: 7px; text-transform: lowercase; letter-spacing: 0;
+  .stack-card .sc-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 9px; }
+  .stack-card .sc-name { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; }
+  .stack-card .sc-cat { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+  .stack-card .sc-ver { font-size: 11px; color: var(--dim); margin-left: auto; font-variant-numeric: tabular-nums; }
+  .stack-card .sc-what { font-size: 13px; line-height: 1.55; color: var(--fg); margin: 0 0 10px; text-wrap: pretty; }
+  .stack-card .sc-what.muted { color: var(--dim); font-style: italic; }   /* degraded: no sourced definition */
+  .stack-card .sc-here { font-size: 12.5px; line-height: 1.5; color: var(--dim); margin: 0; }
+  .stack-card .sc-here b { color: var(--accent); font-weight: 700; }
+  .stack-card .sc-why {
+    margin-top: 10px; align-self: flex-start; font-size: 12px; font-weight: 700;
+    color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 1px;
   }
-  .stack-main .tag.empty { font-weight: 400; background: var(--bg); }
+  .stack-card .sc-why:hover { background: var(--accent); color: var(--bg); }
+  .stack-card.empty { border-style: dashed; }
+  .stack-card.empty .sc-what { color: var(--dim); font-style: italic; }
+
+  /* ============ GLOSSARY (optional jargon defs) ============ */
+  .glossary { margin: 0; max-width: 80ch; }
+  .glossary > div { padding: 14px 0; border-top: 1px dashed var(--line); }
+  .glossary > div:first-child { border-top: 0; padding-top: 0; }
+  .glossary dt { font-size: 14px; font-weight: 800; color: var(--fg); }
+  .glossary dt::before { content: "› "; color: var(--accent); }
+  .glossary dd { margin: 6px 0 0; font-size: 13px; line-height: 1.55; color: var(--dim); }
 
   /* full stack — secondary, collapsed under a details disclosure */
   .stack-full { margin-top: 4px; }
@@ -150,14 +177,17 @@
     color: var(--dim); font-size: 14px; line-height: 1.55;
     margin: 0 0 16px; text-wrap: pretty;
   }
+  .why-card .links { margin-top: auto; display: flex; flex-direction: column; gap: 7px; align-items: flex-start; }
   .deep {
-    margin-top: auto; font-size: 13px; font-weight: 700;
+    font-size: 13px; font-weight: 700;
     color: var(--accent); text-decoration: none;
     border-bottom: 2px solid var(--accent); padding-bottom: 1px;
     align-self: flex-start;
   }
   .deep:hover { background: var(--accent); color: var(--bg); }
   .deep:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .deep.alt { color: var(--dim); border-bottom-color: var(--line); font-weight: 600; }
+  .deep.alt:hover { background: var(--fg); color: var(--bg); }
   .why-note {
     color: var(--dim); font-size: 14px; line-height: 1.6; max-width: 62ch; margin: 0;
   }
@@ -234,22 +264,54 @@
   <p class="kicker">Project overview</p>
   <h1>duels</h1>
   <p class="idea">Two strangers, one ~90-second head-to-head duel, no install and no account — a web platform where matchmaking, scoring, and every answer reveal run server-side at the edge, so the game stays fast and stays cheat-proof.</p>
-  <p class="live"><a class="deep" href="https://fastduels.com" target="_blank" rel="noopener">Play live at fastduels.com <span aria-hidden="true">&rarr;</span></a></p>
+  <div class="hero-links">
+    <a class="ext" href="https://fastduels.com" target="_blank" rel="noopener noreferrer">Live site <span aria-hidden="true">↗</span></a>
+    <a class="ext" href="https://github.com/bartek-filipiuk/duels" target="_blank" rel="noopener noreferrer">Repository <span aria-hidden="true">↗</span></a>
+  </div>
 </header>
 
 <div class="wrap">
 
-  <!-- ============ STACK AT A GLANCE ============ -->
+  <!-- ============ THE STACK, EXPLAINED ============ -->
   <section>
-    <p class="eyebrow">Stack at a glance<span class="rule"></span></p>
-    <div class="stack-main">
-      <span class="tag">svelte <small>framework</small></span>
-      <span class="tag">better-sqlite3 <small>db/orm</small></span>
-      <span class="tag">drizzle-orm <small>db/orm</small></span>
-      <span class="tag">better-auth <small>auth</small></span>
-      <span class="tag">tailwindcss <small>styling</small></span>
-      <span class="tag">vite <small>build/test</small></span>
-      <span class="tag">vitest <small>build/test</small></span>
+    <p class="eyebrow">The stack, explained<span class="rule"></span></p>
+    <div class="stack-explained">
+      <div class="stack-card" id="tech-svelte">
+        <div class="sc-head"><span class="sc-name">svelte</span><span class="sc-cat">framework</span><span class="sc-ver">5.10</span></div>
+        <p class="sc-what">A UI framework built around a compiler that turns declarative components — written in HTML, CSS, and JavaScript — into lean, optimized JavaScript that surgically updates the DOM. There is no virtual DOM, so the browser ships and runs less code.</p>
+        <p class="sc-here"><b>Here:</b> powers the web app UI (via SvelteKit).</p>
+      </div>
+      <div class="stack-card" id="tech-better-sqlite3">
+        <div class="sc-head"><span class="sc-name">better-sqlite3</span><span class="sc-cat">db/orm</span><span class="sc-ver">12.9</span></div>
+        <p class="sc-what">A fast, simple library for using SQLite databases from Node.js through a synchronous API, where queries return their results directly instead of via callbacks or promises. It offers full transaction support over an embedded, file-based database.</p>
+        <p class="sc-here"><b>Here:</b> the SQLite driver behind database access in local development and tests (production runs on Cloudflare D1).</p>
+      </div>
+      <div class="stack-card" id="tech-drizzle-orm">
+        <div class="sc-head"><span class="sc-name">drizzle-orm</span><span class="sc-cat">db/orm</span><span class="sc-ver">0.45</span></div>
+        <p class="sc-what">A TypeScript ORM that lets you define your database schema and run queries in TypeScript, with both a typed SQL-like query builder and higher-level relational queries. It is lightweight and serverless-ready, supporting PostgreSQL, MySQL, and SQLite plus its own migration tooling.</p>
+        <p class="sc-here"><b>Here:</b> defines the schema and runs all database queries.</p>
+      </div>
+      <div class="stack-card" id="tech-better-auth">
+        <div class="sc-head"><span class="sc-name">better-auth</span><span class="sc-cat">auth</span><span class="sc-ver">1.6</span></div>
+        <p class="sc-what">A framework-agnostic authentication and authorization library for TypeScript that handles email/password sign-in, social/OAuth providers, and sessions out of the box. A plugin ecosystem extends it with features like two-factor auth, multi-tenancy, and passkeys without much extra code.</p>
+        <p class="sc-here"><b>Here:</b> anonymous-first sessions, login, and passkey sign-in.</p>
+        <a class="sc-why" href="#why-better-auth">why this choice →</a>
+      </div>
+      <div class="stack-card" id="tech-tailwindcss">
+        <div class="sc-head"><span class="sc-name">tailwindcss</span><span class="sc-cat">styling</span><span class="sc-ver">4.0</span></div>
+        <p class="sc-what">A utility-first CSS framework where you style elements by applying small predefined classes (like flex or text-center) directly in your markup instead of writing custom CSS. It scans your templates and generates only the CSS you actually use, producing a small, optimized stylesheet.</p>
+        <p class="sc-here"><b>Here:</b> styles the whole UI.</p>
+      </div>
+      <div class="stack-card" id="tech-vite">
+        <div class="sc-head"><span class="sc-name">vite</span><span class="sc-cat">build/test</span><span class="sc-ver">6.0</span></div>
+        <p class="sc-what">A modern frontend build tool and development server that gives near-instant startup and hot-module replacement while developing, then bundles optimized assets for production. In development it serves source files over native ES modules instead of pre-bundling everything.</p>
+        <p class="sc-here"><b>Here:</b> the dev server and production bundler.</p>
+      </div>
+      <div class="stack-card" id="tech-vitest">
+        <div class="sc-head"><span class="sc-name">vitest</span><span class="sc-cat">build/test</span><span class="sc-ver">2.1</span></div>
+        <p class="sc-what">A fast testing framework powered by Vite that reuses your project's Vite config and transform pipeline, so tests run with the same setup as your app, with TypeScript, JSX, and ESM support out of the box. It offers a Jest-compatible API plus watch mode, mocking, snapshots, and coverage.</p>
+        <p class="sc-here"><b>Here:</b> runs the unit and integration test suite.</p>
+      </div>
     </div>
     <details class="stack-full">
       <summary>full stack</summary>
@@ -265,27 +327,27 @@
     <div class="why-card">
       <p class="choice">Realtime on Durable Objects, not a socket server</p>
       <p class="why">Each match is its own in-memory stateful object at the edge, so there is no global lock and the per-message ping never waits on a database — D1 is touched only at session boundaries.</p>
-      <a class="deep" href="course.html#beat-realtime-on-durable-objects">full decision in the course &rarr;</a>
+      <div class="links"><a class="deep" href="course.html#beat-realtime-on-durable-objects">full decision in the course &rarr;</a></div>
     </div>
-    <div class="why-card">
+    <div class="why-card" id="why-better-auth">
       <p class="choice">Anonymous-first accounts with Better Auth</p>
       <p class="why">Players still just type a nick, but identity lives in a server session from the first touch — so it survives a cache clear or a device switch, and signing in is offered only once there is a win worth saving.</p>
-      <a class="deep" href="course.html#beat-anonymous-first-auth">full decision in the course &rarr;</a>
+      <div class="links"><a class="deep" href="course.html#beat-anonymous-first-auth">full decision in the course &rarr;</a><a class="deep alt" href="#tech-better-auth">what is better-auth ↑</a></div>
     </div>
     <div class="why-card">
       <p class="choice">A pure-TypeScript engine with zero Cloudflare imports</p>
       <p class="why">The same game logic runs in a Worker, a browser, and a Node test unchanged — which is what makes the documented ~one-week migration off Cloudflare credible, and what lets the server replay runs to catch cheaters.</p>
-      <a class="deep" href="course.html#beat-thin-transport-escape-hatch">full decision in the course &rarr;</a>
+      <div class="links"><a class="deep" href="course.html#beat-thin-transport-escape-hatch">full decision in the course &rarr;</a></div>
     </div>
     <div class="why-card">
       <p class="choice">The server replays every run; the client score is never trusted</p>
       <p class="why">The deterministic engine re-runs the exact rounds from the same seed and scores from scratch, so a client&#x27;s tally is only a claim to verify — topping the leaderboard still means actually playing a correct game.</p>
-      <a class="deep" href="course.html#beat-server-replay-scoring">full decision in the course &rarr;</a>
+      <div class="links"><a class="deep" href="course.html#beat-server-replay-scoring">full decision in the course &rarr;</a></div>
     </div>
     <div class="why-card">
       <p class="choice">One GameModule contract every game implements</p>
       <p class="why">The platform never imports a specific game, so when multi-choice arrived months later it slotted in as a single new case with the three existing categories untouched.</p>
-      <a class="deep" href="course.html#beat-game-module-boundary">full decision in the course &rarr;</a>
+      <div class="links"><a class="deep" href="course.html#beat-game-module-boundary">full decision in the course &rarr;</a></div>
     </div>
     </div>
   </section>
@@ -301,6 +363,17 @@
       <li><b>Accounts that survive a device switch</b> — a guest UUID upgrades into a Better Auth profile with passkey sign-in, so match history and rating carry over instead of vanishing.</li>
       <li><b>Swappable content categories</b> — question packs ship as standalone workspace modules wired into the picker, so a new topic is a new package — not a rewrite.</li>
     </ul>
+  </section>
+
+  <!-- ============ GLOSSARY ============ -->
+  <section>
+    <p class="eyebrow">Glossary<span class="rule"></span></p>
+    <dl class="glossary">
+      <div><dt>edge</dt><dd>Running code in data centres geographically close to each user instead of one central region, which cuts the network round-trip and lowers latency.</dd></div>
+      <div><dt>Durable Object</dt><dd>A Cloudflare primitive that pins one stateful instance per ID at the edge, so every request for that ID reaches the same isolate — ideal for coordinating one live match.</dd></div>
+      <div><dt>JWT</dt><dd>A compact, digitally-signed token that carries claims as JSON, so the receiver can verify it came from a trusted issuer and was not tampered with.</dd></div>
+      <div><dt>passkey</dt><dd>A passwordless sign-in that uses your device&#x27;s fingerprint, face, or PIN together with public-key cryptography instead of a typed password.</dd></div>
+    </dl>
   </section>
 
   <!-- ============ TWO DOORS ============ -->
@@ -323,7 +396,7 @@
   </section>
 
   <!-- ============ FOOTER ============ -->
-  <footer class="num">Generated 2026-05-30 14:09 GMT+2 · v1.0.0</footer>
+  <footer class="num">Generated 2026-05-31 14:37 GMT+2 · v1.0.0</footer>
 
 </div>
 

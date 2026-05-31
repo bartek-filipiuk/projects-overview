@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-31T14:20:30+02:00",
+  "generated_at": "2026-05-31T14:37:00+02:00",
   "skill_version": "v1.0.0",
   "project": "duels",
   "inputs": {
@@ -7,11 +7,21 @@
     "masterclass": "reused",
     "security": "reused-remediation"
   },
+  "links": {
+    "live_url": "https://fastduels.com",
+    "repo_url": "https://github.com/bartek-filipiuk/duels"
+  },
   "overview_sources": {
     "idea": ".project-data/_raw.json:ai_generated.summary",
     "stack_main": ".project-data/_raw.json:code.stack.main",
     "why_stack": ".masterclass/_course.json:beats",
     "value_points": ".project-data/_raw.json:ai_generated.features"
+  },
+  "stack_knowledge": {
+    "tech_undefined": [],
+    "glossary_terms": ["edge", "durable object", "jwt", "passkey"],
+    "cache_hits": ["better-auth", "drizzle-orm", "tailwindcss", "vitest"],
+    "cache_misses": ["svelte", "better-sqlite3", "vite"]
   },
   "deep_links": [
     {
